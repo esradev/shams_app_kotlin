@@ -55,6 +55,7 @@ import ir.wpstorm.shams.util.DownloadHelper
 import ir.wpstorm.shams.viewmodel.LessonViewModel
 import ir.wpstorm.shams.viewmodel.LessonViewModelFactory
 import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,10 +82,18 @@ fun LessonScreen(
 
     LaunchedEffect(lessonId) {
         viewModel.loadLesson(lessonId)
+        // Check if file is already downloaded
+        val fileDir = File(context.filesDir, "shams_app")
+        val fileName = "lesson_${lessonId}.mp3"
+        val file = File(fileDir, fileName)
+        if (file.exists()) {
+            localAudioPath = file.absolutePath
+            isDownloaded = true
+        }
     }
 
     // Prepare audio when lesson is loaded
-    LaunchedEffect(uiState.lesson?.audioUrl) {
+    LaunchedEffect(uiState.lesson?.audioUrl, localAudioPath) {
         uiState.lesson?.audioUrl?.let { url ->
             val path = localAudioPath ?: url
             audioPlayer.prepare(path)
@@ -135,12 +144,21 @@ fun LessonScreen(
                             scope.launch {
                                 uiState.lesson?.audioUrl?.let { url ->
                                     isDownloading = true
+                                    downloadProgress = 0f
                                     val fileName = "lesson_${lessonId}.mp3"
-                                    val path = DownloadHelper.downloadFile(context, url, fileName)
+                                    val path = DownloadHelper.downloadFile(
+                                        context = context,
+                                        fileUrl = url,
+                                        fileName = fileName,
+                                        onProgress = { progress ->
+                                            downloadProgress = progress
+                                        }
+                                    )
                                     isDownloading = false
                                     if (path != null) {
                                         localAudioPath = path
                                         isDownloaded = true
+                                        audioPlayer.prepare(path) // Prepare with local file
                                         Toast.makeText(context, "دانلود کامل شد!", Toast.LENGTH_SHORT).show()
                                     } else {
                                         Toast.makeText(context, "خطا در دانلود", Toast.LENGTH_SHORT).show()
@@ -150,10 +168,22 @@ fun LessonScreen(
                         },
                         onDelete = {
                             localAudioPath?.let { path ->
-                                // Delete local file logic here
-                                localAudioPath = null
-                                isDownloaded = false
-                                Toast.makeText(context, "فایل حذف شد", Toast.LENGTH_SHORT).show()
+                                try {
+                                    val file = File(path)
+                                    if (file.exists() && file.delete()) {
+                                        localAudioPath = null
+                                        isDownloaded = false
+                                        // Re-prepare audio with original URL
+                                        uiState.lesson?.audioUrl?.let { url ->
+                                            audioPlayer.prepare(url)
+                                        }
+                                        Toast.makeText(context, "فایل حذف شد", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, "خطا در حذف فایل", Toast.LENGTH_SHORT).show()
+                                    }
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "خطا در حذف فایل", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
                         isDownloading = isDownloading,

@@ -13,7 +13,8 @@ object DownloadHelper {
     suspend fun downloadFile(
         context: Context,
         fileUrl: String,
-        fileName: String
+        fileName: String,
+        onProgress: ((Float) -> Unit)? = null
     ): String? {
         return withContext(Dispatchers.IO) {
             try {
@@ -25,14 +26,30 @@ object DownloadHelper {
                     return@withContext null
                 }
 
+                val fileLength = connection.contentLength
                 val fileDir = File(context.filesDir, "shams_app")
                 if (!fileDir.exists()) fileDir.mkdirs()
 
                 val file = File(fileDir, fileName)
                 val outputStream = FileOutputStream(file)
+
                 connection.inputStream.use { input ->
                     outputStream.use { output ->
-                        input.copyTo(output)
+                        val buffer = ByteArray(8192)
+                        var totalRead = 0L
+                        var bytesRead: Int
+
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            output.write(buffer, 0, bytesRead)
+                            totalRead += bytesRead
+
+                            if (fileLength > 0 && onProgress != null) {
+                                val progress = totalRead.toFloat() / fileLength.toFloat()
+                                withContext(Dispatchers.Main) {
+                                    onProgress(progress)
+                                }
+                            }
+                        }
                     }
                 }
 

@@ -38,7 +38,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -75,8 +74,8 @@ fun AudioPlayerCompose(
     val currentPosition by audioPlayer.currentPosition
     val duration by audioPlayer.duration
     val isLoaded by audioPlayer.isLoaded
+    val playbackSpeed by audioPlayer.playbackSpeed
 
-    var playbackSpeed by remember { mutableFloatStateOf(1f) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     fun formatTime(timeMs: Long): String {
@@ -86,13 +85,14 @@ fun AudioPlayerCompose(
     }
 
     fun togglePlaybackSpeed() {
-        playbackSpeed = when (playbackSpeed) {
+        val newSpeed = when (playbackSpeed) {
             1f -> 1.25f
             1.25f -> 1.5f
             1.5f -> 2f
             2f -> 0.75f
             else -> 1f
         }
+        audioPlayer.setPlaybackSpeed(newSpeed)
     }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -125,11 +125,14 @@ fun AudioPlayerCompose(
                         )
 
                         Slider(
-                            value = currentPosition.toFloat(),
+                            value = if (duration > 0) currentPosition.toFloat() else 0f,
                             onValueChange = { newValue ->
-                                audioPlayer.seekTo(newValue.toLong())
+                                if (duration > 0) {
+                                    audioPlayer.seekTo(newValue.toLong())
+                                }
                             },
-                            valueRange = 0f..duration.toFloat(),
+                            valueRange = 0f..(if (duration > 0) duration.toFloat() else 1f),
+                            enabled = duration > 0,
                             modifier = Modifier.weight(1f),
                             colors = SliderDefaults.colors(
                                 thumbColor = Emerald700,

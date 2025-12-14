@@ -14,7 +14,7 @@ import kotlinx.coroutines.*
 class AudioPlayer(private val context: Context) {
 
     private var exoPlayer: ExoPlayer? = null
-    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var updateJob: Job? = null
 
     // Compose State for better integration
     private val _isPlaying = mutableStateOf(false)
@@ -28,6 +28,9 @@ class AudioPlayer(private val context: Context) {
 
     private val _isLoaded = mutableStateOf(false)
     val isLoaded: State<Boolean> = _isLoaded
+
+    private val _playbackSpeed = mutableStateOf(1f)
+    val playbackSpeed: State<Float> = _playbackSpeed
 
     // LiveData for backward compatibility
     private val _isPlayingLiveData = MutableLiveData(false)
@@ -52,6 +55,7 @@ class AudioPlayer(private val context: Context) {
                             _isLoaded.value = true
                             _duration.value = player.duration
                             _durationLiveData.value = player.duration
+                            startPositionUpdates()
                         }
                         Player.STATE_ENDED -> {
                             _isPlaying.value = false
@@ -65,17 +69,19 @@ class AudioPlayer(private val context: Context) {
                     _isPlayingLiveData.value = isPlaying
                 }
             })
+        }
+    }
 
-            // Update current position periodically
-            scope.launch {
-                while (isActive) {
-                    if (_isLoaded.value) {
-                        val position = player.currentPosition
-                        _currentPosition.value = position
-                        _currentPositionLiveData.value = position
-                    }
-                    delay(500)
+    private fun startPositionUpdates() {
+        updateJob?.cancel()
+        updateJob = CoroutineScope(Dispatchers.Main).launch {
+            while (isActive && _isLoaded.value) {
+                exoPlayer?.let { player ->
+                    val position = player.currentPosition
+                    _currentPosition.value = position
+                    _currentPositionLiveData.value = position
                 }
+                delay(100) // Update more frequently for smoother UI
             }
         }
     }
@@ -106,13 +112,25 @@ class AudioPlayer(private val context: Context) {
         }
     }
 
+    fun setPlaybackSpeed(speed: Float) {
+        if (speed > 0f && speed <= 3f) { // Reasonable speed limits
+            exoPlayer?.setPlaybackSpeed(speed)
+            _playbackSpeed.value = speed
+        }
+    }
+
     fun release() {
+        updateJob?.cancel()
+        updateJob = null
         exoPlayer?.release()
         exoPlayer = null
         _isLoaded.value = false
         _isPlaying.value = false
         _currentPosition.value = 0L
         _duration.value = 0L
-        scope.cancel()
+        _playbackSpeed.value = 1f
+        _isPlayingLiveData.value = false
+        _currentPositionLiveData.value = 0L
+        _durationLiveData.value = 0L
     }
 }
