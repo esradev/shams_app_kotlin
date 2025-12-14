@@ -1,9 +1,9 @@
 package ir.wpstorm.shams.ui.screens.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,53 +17,45 @@ fun SettingsScreen(
     var offlineMode by remember { mutableStateOf(false) }
     var autoDownload by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Settings") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector =  Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
-        }
-    ) { padding ->
-
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(16.dp)
         ) {
+            Text(
+                text = "تنظیمات",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
             SettingSwitch(
-                title = "Offline mode",
-                description = "Use downloaded lessons only",
+                title = "حالت آفلاین",
+                description = "فقط از دروس دانلود شده استفاده کن",
                 checked = offlineMode,
                 onCheckedChange = { offlineMode = it }
             )
 
             SettingSwitch(
-                title = "Auto download audio",
-                description = "Download lesson audio automatically",
+                title = "دانلود خودکار صوت",
+                description = "دانلود خودکار صوت درس‌ها",
                 checked = autoDownload,
                 onCheckedChange = { autoDownload = it }
             )
 
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             Text(
-                text = "About",
+                text = "درباره برنامه",
                 style = MaterialTheme.typography.titleMedium
             )
 
             Text(
-                text = "Shams al-Ma'arif\nVersion 1.0.0",
+                text = "شمس المعارف\nنسخه 1.0.0",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -71,7 +63,7 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingSwitch(
+fun SettingSwitch(
     title: String,
     description: String,
     checked: Boolean,
@@ -96,6 +88,7 @@ private fun SettingSwitch(
             checked = checked,
             onCheckedChange = onCheckedChange
         )
+
     }
 }
 

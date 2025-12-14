@@ -7,20 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -43,12 +33,11 @@ import ir.wpstorm.shams.ui.components.GlobalLoading
 import ir.wpstorm.shams.viewmodel.CategoryViewModel
 import ir.wpstorm.shams.viewmodel.CategoryViewModelFactory
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreen(
     onCategoryClick: (Int) -> Unit,
-    onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSearchClick: () -> Unit, // Kept for potential future use
+    onSettingsClick: () -> Unit // Kept for potential future use
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as ir.wpstorm.shams.ShamsApplication
@@ -69,56 +58,23 @@ fun CategoryScreen(
     }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        Scaffold(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding(),
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "دروس خارج",
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    },
-                    actions = {
-                        IconButton(onClick = onSettingsClick) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "تنظیمات"
-                            )
-                        }
-                        IconButton(onClick = onSearchClick) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "جستجو"
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-            },
-            containerColor = MaterialTheme.colorScheme.background
-        ) { paddingValues ->
+                .background(MaterialTheme.colorScheme.background)
+        ) {
             when {
                 uiState.error != null -> {
                     GlobalError(
                         type = "network",
                         message = uiState.error,
-                        onRetry = { viewModel.retryLoading() },
-                        modifier = Modifier.padding(paddingValues)
+                        onRetry = { viewModel.retryLoading() }
                     )
                 }
 
                 uiState.isLoading -> {
                     GlobalLoading(
-                        message = "در حال آماده سازی برنامه",
-                        modifier = Modifier.padding(paddingValues)
+                        message = "در حال آماده سازی برنامه"
                     )
                 }
 
@@ -126,7 +82,6 @@ fun CategoryScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(paddingValues)
                             .background(MaterialTheme.colorScheme.background)
                     ) {
                         item {

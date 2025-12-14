@@ -2,6 +2,7 @@ package ir.wpstorm.shams.ui.screens.lessons
 
 import android.widget.TextView
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,19 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -57,11 +50,10 @@ import ir.wpstorm.shams.viewmodel.LessonViewModelFactory
 import kotlinx.coroutines.launch
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LessonScreen(
     lessonId: Int,
-    onBack: () -> Unit
+    @Suppress("UNUSED_PARAMETER") onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as ir.wpstorm.shams.ShamsApplication
@@ -104,36 +96,13 @@ fun LessonScreen(
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding(),
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = uiState.lesson?.title?.take(30) ?: "درس",
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "بازگشت"
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-            },
-            containerColor = if (MaterialTheme.colorScheme.background == Color.White) {
-                Gray50
-            } else {
-                Gray900
-            },
+                .background(
+                    if (MaterialTheme.colorScheme.background == Color.White) {
+                        Gray50
+                    } else {
+                        Gray900
+                    }
+                ),
             bottomBar = {
                 // Audio Player at bottom if lesson has audio
                 if (uiState.lesson?.audioUrl != null) {
@@ -181,7 +150,8 @@ fun LessonScreen(
                                     } else {
                                         Toast.makeText(context, "خطا در حذف فایل", Toast.LENGTH_SHORT).show()
                                     }
-                                } catch (e: Exception) {
+                                } catch (_: Exception) {
+                                    @Suppress("UNUSED_PARAMETER")
                                     Toast.makeText(context, "خطا در حذف فایل", Toast.LENGTH_SHORT).show()
                                 }
                             }
@@ -199,14 +169,14 @@ fun LessonScreen(
                         type = "network",
                         message = uiState.error,
                         onRetry = { viewModel.loadLesson(lessonId) },
-                        modifier = Modifier.padding(paddingValues)
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
 
                 uiState.isLoading -> {
                     GlobalLoading(
                         message = "در حال بارگذاری درس...",
-                        modifier = Modifier.padding(paddingValues)
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
 
@@ -216,7 +186,6 @@ fun LessonScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(paddingValues)
                             .verticalScroll(scrollState)
                     ) {
                         // Lesson header

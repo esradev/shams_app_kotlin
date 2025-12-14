@@ -31,7 +31,10 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
 
-                    MainScaffold(navController = navController) { paddingValues ->
+                    MainScaffold(
+                        navController = navController,
+                        themeState = themeState
+                    ) { paddingValues ->
                         NavGraph(
                             navController = navController,
                             paddingValues = paddingValues

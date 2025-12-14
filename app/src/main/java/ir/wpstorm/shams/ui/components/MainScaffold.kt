@@ -4,20 +4,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import ir.wpstorm.shams.ui.theme.ThemeManager
-import ir.wpstorm.shams.ui.theme.rememberThemeState
+import ir.wpstorm.shams.ui.theme.ThemeState
 
 @Composable
 fun MainScaffold(
     navController: NavController,
+    themeState: ThemeState,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val context = LocalContext.current
-    val themeManager = remember { ThemeManager(context) }
-    val themeState = rememberThemeState(themeManager)
 
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry.value?.destination?.route
@@ -43,10 +39,16 @@ fun MainScaffold(
                 title = pageTitle,
                 showBackButton = showBackButton,
                 isHome = isHome,
+                showSearchIcon = currentDestination != "search", // Hide search icon on search page
                 onBackClick = {
                     navController.popBackStack()
                 },
                 onThemeToggle = themeState.toggleTheme,
+                onSearchClick = {
+                    if (currentDestination != "search") {
+                        navController.navigate("search")
+                    }
+                },
                 isDarkTheme = themeState.isDarkTheme
             )
         },

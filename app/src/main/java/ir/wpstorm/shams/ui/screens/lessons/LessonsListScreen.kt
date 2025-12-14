@@ -11,23 +11,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,19 +45,13 @@ import ir.wpstorm.shams.ui.components.LessonCard
 import ir.wpstorm.shams.ui.theme.Emerald400
 import ir.wpstorm.shams.ui.theme.Emerald50
 import ir.wpstorm.shams.ui.theme.Emerald700
-import ir.wpstorm.shams.ui.theme.Gray400
 import ir.wpstorm.shams.ui.theme.Gray50
-import ir.wpstorm.shams.ui.theme.Gray500
-import ir.wpstorm.shams.ui.theme.Gray700
-import ir.wpstorm.shams.ui.theme.Gray800
 import ir.wpstorm.shams.ui.theme.Gray900
 import ir.wpstorm.shams.viewmodel.CategoryViewModel
 import ir.wpstorm.shams.viewmodel.CategoryViewModelFactory
 import ir.wpstorm.shams.viewmodel.LessonsListViewModel
 import ir.wpstorm.shams.viewmodel.LessonsListViewModelFactory
-import androidx.compose.runtime.CompositionLocalProvider
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LessonsListScreen(
     categoryId: Int,
@@ -79,12 +67,13 @@ fun LessonsListScreen(
     val lessonViewModel: LessonsListViewModel = viewModel(factory = lessonFactory)
     val lessonUiState by lessonViewModel.uiState.collectAsState()
 
-    // Category ViewModel to get category details
+    // Category ViewModel
     val categoryRepository = application.categoryRepository
     val categoryFactory = CategoryViewModelFactory(categoryRepository)
     val categoryViewModel: CategoryViewModel = viewModel(factory = categoryFactory)
     val categoryUiState by categoryViewModel.uiState.collectAsState()
 
+    // Expandable description state
     var isDescriptionExpanded by remember { mutableStateOf(false) }
 
     // Get the current category
@@ -93,19 +82,17 @@ fun LessonsListScreen(
     // Validate categoryId
     if (categoryId <= 0) {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            Scaffold { paddingValues ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    GlobalError(
-                        type = "general",
-                        message = "شناسه دسته‌بندی نامعتبر است",
-                        onRetry = { onBack() }
-                    )
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                GlobalError(
+                    type = "general",
+                    message = "شناسه دسته‌بندی نامعتبر است",
+                    onRetry = { onBack() }
+                )
             }
         }
         return
@@ -116,62 +103,35 @@ fun LessonsListScreen(
     }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        Scaffold(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding(),
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = currentCategory?.name ?: "درس‌ها",
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "بازگشت"
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
-                    )
+                .background(
+                    if (MaterialTheme.colorScheme.background == Color.White) {
+                        Gray50
+                    } else {
+                        Gray900
+                    }
                 )
-            },
-            containerColor = if (MaterialTheme.colorScheme.background == Color.White) {
-                Gray50
-            } else {
-                Gray900
-            }
-        ) { paddingValues ->
+        ) {
             when {
                 lessonUiState.error != null -> {
                     GlobalError(
                         type = "network",
                         message = lessonUiState.error,
-                        onRetry = { lessonViewModel.loadLessonsForCategory(categoryId) },
-                        modifier = Modifier.padding(paddingValues)
+                        onRetry = { lessonViewModel.loadLessonsForCategory(categoryId) }
                     )
                 }
 
                 lessonUiState.isLoading -> {
                     GlobalLoading(
-                        message = "در حال بارگذاری درس‌ها...",
-                        modifier = Modifier.padding(paddingValues)
+                        message = "در حال بارگذاری درس‌ها..."
                     )
                 }
 
                 else -> {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues),
+                        modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         // Category header section
@@ -208,14 +168,14 @@ fun LessonsListScreen(
                                     Text(
                                         text = "آیت الله سید محمدرضا حسینی آملی (حفظه الله)",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Gray500,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         textAlign = TextAlign.Right
                                     )
 
                                     Text(
                                         text = " • ",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Gray400,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                         modifier = Modifier.padding(horizontal = 4.dp)
                                     )
 
@@ -265,7 +225,7 @@ fun LessonsListScreen(
                                                     Icons.Default.KeyboardArrowDown
                                                 },
                                                 contentDescription = if (isDescriptionExpanded) "بستن" else "باز کردن",
-                                                tint = Gray700
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
 
                                             Text(
@@ -288,7 +248,7 @@ fun LessonsListScreen(
                                                 style = MaterialTheme.typography.bodyMedium.copy(
                                                     lineHeight = 24.sp
                                                 ),
-                                                color = Gray700,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 textAlign = TextAlign.Right,
                                                 modifier = Modifier.fillMaxWidth()
                                             )
@@ -340,7 +300,7 @@ fun LessonsListScreen(
                                     Text(
                                         text = "هیچ درسی در این دسته یافت نشد",
                                         style = MaterialTheme.typography.bodyLarge,
-                                        color = Gray500,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         textAlign = TextAlign.Center
                                     )
                                 }
