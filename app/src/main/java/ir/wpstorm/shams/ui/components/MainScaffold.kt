@@ -63,7 +63,7 @@ fun MainScaffold(
             // Main content
             Box(modifier = Modifier.weight(1f)) {
                 val contentPaddingValues = PaddingValues(
-                    bottom = if (showTabBar) 80.dp else 0.dp
+                    bottom = 0.dp // Remove bottom padding to eliminate white space
                 )
                 content(contentPaddingValues)
             }

@@ -6,10 +6,11 @@ import retrofit2.http.Query
 
 interface WordPressApi {
 
-    // 🔹 Categories = Courses
+    // 🔹 Categories = Courses (only child categories with posts)
     @GET("wp-json/wp/v2/categories")
     suspend fun getCategories(
-        @Query("per_page") perPage: Int = 100
+        @Query("per_page") perPage: Int = 100,
+        @Query("hide_empty") hideEmpty: Boolean = true  // Only categories with posts
     ): List<CategoryDto>
 
     // 🔹 Lessons by Category

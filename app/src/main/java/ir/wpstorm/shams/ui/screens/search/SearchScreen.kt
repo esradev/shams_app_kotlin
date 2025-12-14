@@ -83,7 +83,8 @@ fun SearchScreen(
 
                 else -> {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 80.dp) // Add bottom padding for tab bar
                     ) {
                         items(uiState.results) { result ->
                             Column(

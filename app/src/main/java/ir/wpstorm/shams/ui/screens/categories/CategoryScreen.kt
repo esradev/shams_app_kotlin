@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -82,7 +83,8 @@ fun CategoryScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background)
+                            .background(MaterialTheme.colorScheme.background),
+                        contentPadding = PaddingValues(bottom = 80.dp) // Add bottom padding for tab bar
                     ) {
                         item {
                             Column(
@@ -104,7 +106,7 @@ fun CategoryScreen(
                         }
 
                         items(
-                            uiState.categories.filter { category -> category.parent != 0 }
+                            uiState.categories
                         ) { category ->
                             CourseCard(
                                 course = category,

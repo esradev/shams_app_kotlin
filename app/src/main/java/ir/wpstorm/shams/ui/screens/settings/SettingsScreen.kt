@@ -58,7 +58,8 @@ fun SettingsScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 80.dp) // Add bottom padding for tab bar
         ) {
             item {
                 Text(
