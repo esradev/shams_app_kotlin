@@ -20,7 +20,7 @@ class ShamsApplication : Application() {
     
     val categoryRepository by lazy { 
         Log.d("ShamsApplication", "Initializing category repository")
-        CategoryRepository() 
+        CategoryRepository(database.categoryDao())
     }
 
     override fun onCreate() {

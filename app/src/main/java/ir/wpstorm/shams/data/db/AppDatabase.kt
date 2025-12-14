@@ -6,13 +6,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [LessonEntity::class],
-    version = 1,
+    entities = [LessonEntity::class, CategoryEntity::class, DownloadedAudioEntity::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun lessonDao(): LessonDao
+    abstract fun categoryDao(): CategoryDao
+    abstract fun downloadedAudioDao(): DownloadedAudioDao
 
     companion object {
         @Volatile
@@ -24,7 +26,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "shams_app_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

@@ -4,27 +4,53 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LessonDao {
+    @Query("SELECT * FROM lessons ORDER BY id ASC")
+    fun getAllLessons(): Flow<List<LessonEntity>>
 
-    // 🔹 Insert or replace multiple lessons
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertLessons(lessons: List<LessonEntity>)
+    @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY id ASC")
+    fun getLessonsByCategory(categoryId: Int): Flow<List<LessonEntity>>
 
-    // 🔹 Insert or replace a single lesson
+    @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY id ASC")
+    suspend fun getLessonsByCategorySync(categoryId: Int): List<LessonEntity>
+
+    @Query("SELECT * FROM lessons WHERE id = :id")
+    suspend fun getLessonById(id: Int): LessonEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLesson(lesson: LessonEntity)
 
-    // 🔹 Get lessons by category
-    @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY id ASC")
-    suspend fun getLessonsByCategory(categoryId: Int): List<LessonEntity>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertLessons(lessons: List<LessonEntity>)
 
-    // 🔹 Get a single lesson by ID
-    @Query("SELECT * FROM lessons WHERE id = :lessonId LIMIT 1")
-    suspend fun getLessonById(lessonId: Int): LessonEntity?
+    @Update
+    suspend fun updateLesson(lesson: LessonEntity)
 
-    // 🔹 Search lessons by title (offline)
-    @Query("SELECT * FROM lessons WHERE title LIKE '%' || :query || '%' ORDER BY id ASC")
+    @Query("UPDATE lessons SET is_favorite = :isFavorite WHERE id = :id")
+    suspend fun updateFavoriteStatus(id: Int, isFavorite: Boolean)
+
+    @Query("UPDATE lessons SET play_count = play_count + 1 WHERE id = :id")
+    suspend fun incrementPlayCount(id: Int)
+
+    @Query("SELECT * FROM lessons WHERE is_favorite = 1 ORDER BY updated_at DESC")
+    fun getFavoriteLessons(): Flow<List<LessonEntity>>
+
+    @Query("DELETE FROM lessons WHERE category_id = :categoryId")
+    suspend fun deleteLessonsByCategory(categoryId: Int)
+
+    @Query("DELETE FROM lessons")
+    suspend fun clearLessons()
+
+    @Query("SELECT COUNT(*) FROM lessons WHERE category_id = :categoryId")
+    suspend fun getLessonCountByCategory(categoryId: Int): Int
+
+    @Query("SELECT * FROM lessons WHERE title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%' ORDER BY updated_at DESC")
     suspend fun searchLessons(query: String): List<LessonEntity>
+
+    @Query("SELECT * FROM lessons WHERE title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%' ORDER BY updated_at DESC")
+    fun searchLessonsFlow(query: String): Flow<List<LessonEntity>>
 }

@@ -35,11 +35,12 @@ class CategoryViewModel(private val repository: CategoryRepository) : ViewModel(
         viewModelScope.launch {
             _uiState.value = CategoryUiState(isLoading = true)
             try {
-                val categories = repository.getCategories()
-                _uiState.value = CategoryUiState(
-                    isLoading = false,
-                    categories = categories
-                )
+                repository.getCategories().collect { categories ->
+                    _uiState.value = CategoryUiState(
+                        isLoading = false,
+                        categories = categories
+                    )
+                }
             } catch (e: Exception) {
                 _uiState.value = CategoryUiState(
                     isLoading = false,

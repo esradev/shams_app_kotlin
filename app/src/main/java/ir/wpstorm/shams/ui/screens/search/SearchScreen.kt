@@ -75,7 +75,7 @@ fun SearchScreen(
 
                 uiState.error != null -> {
                     Text(
-                        text = "Error: ${uiState.error}",
+                        text = "خطا: ${uiState.error}",
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(16.dp)
                     )

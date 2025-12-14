@@ -18,5 +18,17 @@ data class LessonEntity(
     val audioUrl: String? = null,
 
     @ColumnInfo(name = "category_id")
-    val categoryId: Int? = null
+    val categoryId: Int? = null,
+
+    @ColumnInfo(name = "created_at")
+    val createdAt: Long = System.currentTimeMillis(),
+
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: Long = System.currentTimeMillis(),
+
+    @ColumnInfo(name = "is_favorite")
+    val isFavorite: Boolean = false,
+
+    @ColumnInfo(name = "play_count")
+    val playCount: Int = 0
 )

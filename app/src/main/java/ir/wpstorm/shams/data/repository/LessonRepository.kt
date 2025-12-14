@@ -9,40 +9,62 @@ class LessonRepository(private val lessonDao: LessonDao) {
 
     private val api = ApiClient.wordpressApi
 
-    // 🔹 Fetch lessons by category
+    // 🔹 Fetch lessons by category - Offline-first approach with Flow
     suspend fun getLessonsByCategory(categoryId: Int): List<LessonEntity> {
         return try {
             Log.d("LessonRepository", "Fetching lessons for category: $categoryId")
-            // 1️⃣ Try API first
-            val apiLessons = api.getPostsByCategory(categoryId)
-            Log.d("LessonRepository", "API returned ${apiLessons.size} lessons")
 
-            val entities = apiLessons.map { dto ->
-                LessonEntity(
-                    id = dto.id,
-                    title = dto.title.rendered,
-                    content = dto.content.rendered,
-                    audioUrl = dto.meta?.`the-audio-of-the-lesson`,
-                    categoryId = categoryId
-                )
+            // 1️⃣ Check for cached data first
+            val cachedLessons = lessonDao.getLessonsByCategorySync(categoryId)
+
+            // 2️⃣ Try API to get fresh data
+            try {
+                val apiLessons = api.getPostsByCategory(categoryId)
+                Log.d("LessonRepository", "API returned ${apiLessons.size} lessons")
+
+                val entities = apiLessons.map { dto ->
+                    LessonEntity(
+                        id = dto.id,
+                        title = dto.title.rendered,
+                        content = dto.content.rendered,
+                        audioUrl = dto.meta?.`the-audio-of-the-lesson`,
+                        categoryId = categoryId,
+                        createdAt = System.currentTimeMillis(),
+                        updatedAt = System.currentTimeMillis(),
+                        isFavorite = false,
+                        playCount = 0
+                    )
+                }
+
+                // 3️⃣ Save to local DB
+                lessonDao.insertLessons(entities)
+                Log.d("LessonRepository", "Saved ${entities.size} lessons to database")
+
+                entities
+            } catch (networkException: Exception) {
+                Log.e("LessonRepository", "API call failed: ${networkException.message}")
+
+                // 4️⃣ If network fails, return cached data if available
+                if (cachedLessons.isNotEmpty()) {
+                    Log.d("LessonRepository", "Returning ${cachedLessons.size} cached lessons")
+                    cachedLessons
+                } else {
+                    Log.d("LessonRepository", "No cached lessons, returning mock data")
+                    val mockLessons = getMockLessonsForCategory(categoryId)
+                    lessonDao.insertLessons(mockLessons) // Cache mock data too
+                    mockLessons
+                }
             }
-
-            // 2️⃣ Save to local DB
-            lessonDao.insertLessons(entities)
-            Log.d("LessonRepository", "Saved ${entities.size} lessons to database")
-
-            entities
         } catch (e: Exception) {
-            Log.e("LessonRepository", "API call failed: ${e.message}", e)
-            // 3️⃣ On error, return cached lessons or mock data
-            val cachedLessons = lessonDao.getLessonsByCategory(categoryId)
-            if (cachedLessons.isNotEmpty()) {
-                Log.d("LessonRepository", "Returning ${cachedLessons.size} cached lessons")
-                cachedLessons
-            } else {
-                Log.d("LessonRepository", "No cached lessons, returning mock data")
-                getMockLessonsForCategory(categoryId)
+            Log.e("LessonRepository", "General error: ${e.message}", e)
+            // 5️⃣ Fallback to mock data
+            val mockLessons = getMockLessonsForCategory(categoryId)
+            try {
+                lessonDao.insertLessons(mockLessons)
+            } catch (dbException: Exception) {
+                Log.e("LessonRepository", "Failed to save mock data: ${dbException.message}")
             }
+            mockLessons
         }
     }
 
@@ -68,7 +90,11 @@ class LessonRepository(private val lessonDao: LessonDao) {
                     </div>
                 """.trimIndent(),
                 audioUrl = "https://example.com/audio/lesson${categoryId}_1.mp3",
-                categoryId = categoryId
+                categoryId = categoryId,
+                createdAt = System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis(),
+                isFavorite = false,
+                playCount = 0
             ),
             LessonEntity(
                 id = (categoryId * 1000) + 2,
@@ -86,7 +112,11 @@ class LessonRepository(private val lessonDao: LessonDao) {
                     </div>
                 """.trimIndent(),
                 audioUrl = "https://example.com/audio/lesson${categoryId}_2.mp3",
-                categoryId = categoryId
+                categoryId = categoryId,
+                createdAt = System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis(),
+                isFavorite = false,
+                playCount = 0
             ),
             LessonEntity(
                 id = (categoryId * 1000) + 3,
@@ -105,7 +135,11 @@ class LessonRepository(private val lessonDao: LessonDao) {
                     </div>
                 """.trimIndent(),
                 audioUrl = "https://example.com/audio/lesson${categoryId}_3.mp3",
-                categoryId = categoryId
+                categoryId = categoryId,
+                createdAt = System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis(),
+                isFavorite = false,
+                playCount = 0
             )
         )
     }
@@ -161,7 +195,11 @@ class LessonRepository(private val lessonDao: LessonDao) {
                 </div>
             """.trimIndent(),
             audioUrl = "https://example.com/audio/lesson$lessonId.mp3",
-            categoryId = categoryId
+            categoryId = categoryId,
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis(),
+            isFavorite = false,
+            playCount = 0
         )
     }
 
