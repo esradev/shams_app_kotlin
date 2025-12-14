@@ -65,6 +65,7 @@ fun AudioPlayerCompose(
     postTitle: String,
     onDownload: () -> Unit = {},
     onDelete: () -> Unit = {},
+    onPlayStart: (String?) -> Unit = {},
     isDownloading: Boolean = false,
     downloadProgress: Float = 0f,
     isDownloaded: Boolean = false,
@@ -225,6 +226,8 @@ fun AudioPlayerCompose(
                                     audioPlayer.pause()
                                 } else {
                                     audioPlayer.play()
+                                    // Notify that audio started playing
+                                    onPlayStart(null)
                                 }
                             },
                         contentAlignment = Alignment.Center

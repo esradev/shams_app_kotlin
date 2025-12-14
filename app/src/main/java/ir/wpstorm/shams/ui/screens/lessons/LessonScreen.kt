@@ -38,7 +38,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ir.wpstorm.shams.data.db.DownloadedAudioEntity
-import ir.wpstorm.shams.player.AudioPlayer
+import ir.wpstorm.shams.ShamsApplication
 import ir.wpstorm.shams.ui.components.AudioPlayerCompose
 import ir.wpstorm.shams.ui.components.GlobalError
 import ir.wpstorm.shams.ui.components.GlobalLoading
@@ -46,6 +46,8 @@ import ir.wpstorm.shams.ui.theme.Gray50
 import ir.wpstorm.shams.ui.theme.Gray700
 import ir.wpstorm.shams.ui.theme.Gray900
 import ir.wpstorm.shams.util.DownloadHelper
+import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
+import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModelFactory
 import ir.wpstorm.shams.viewmodel.LessonViewModel
 import ir.wpstorm.shams.viewmodel.LessonViewModelFactory
 import kotlinx.coroutines.launch
@@ -67,8 +69,11 @@ fun LessonScreen(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
-    // Audio Player
-    val audioPlayer = remember { AudioPlayer(context) }
+    // Use global Audio Player for app-wide audio management (same instance as mini player)
+    val globalAudioPlayer = application.globalAudioPlayer
+    val globalAudioPlayerViewModel: GlobalAudioPlayerViewModel = viewModel(
+        factory = GlobalAudioPlayerViewModelFactory(globalAudioPlayer)
+    )
     var localAudioPath by remember { mutableStateOf<String?>(null) }
     var isDownloading by remember { mutableStateOf(false) }
     var downloadProgress by remember { mutableStateOf(0f) }
@@ -94,7 +99,7 @@ fun LessonScreen(
     LaunchedEffect(uiState.lesson?.audioUrl, localAudioPath) {
         uiState.lesson?.audioUrl?.let { url ->
             val path = localAudioPath ?: url
-            audioPlayer.prepare(path)
+            globalAudioPlayer.prepare(path)
         }
     }
 
@@ -113,8 +118,35 @@ fun LessonScreen(
                 // Audio Player at bottom if lesson has audio
                 if (uiState.lesson?.audioUrl != null) {
                     AudioPlayerCompose(
-                        audioPlayer = audioPlayer,
+                        audioPlayer = globalAudioPlayer,
                         postTitle = uiState.lesson?.title ?: "",
+                        onPlayStart = { _ ->
+                            // When audio starts playing, update global player state for mini player display
+                            scope.launch {
+                                // Small delay to ensure audio player state is updated
+                                kotlinx.coroutines.delay(50)
+                                val currentAudio = if (isDownloaded && localAudioPath != null) {
+                                    downloadedAudioRepository.getDownloadedAudioByLessonId(lessonId)
+                                } else {
+                                    // Create a temporary entity for streaming audio
+                                    uiState.lesson?.let { lesson ->
+                                        lesson.audioUrl?.let { url ->
+                                            DownloadedAudioEntity(
+                                                id = "streaming_$lessonId",
+                                                lessonId = lessonId,
+                                                title = lesson.title,
+                                                filePath = url,
+                                                fileSize = 0L,
+                                                downloadDate = System.currentTimeMillis()
+                                            )
+                                        }
+                                    }
+                                }
+                                currentAudio?.let { audio ->
+                                    globalAudioPlayerViewModel.setCurrentAudio(audio)
+                                }
+                            }
+                        },
                         onDownload = {
                             scope.launch {
                                 uiState.lesson?.let { lesson ->
@@ -148,7 +180,7 @@ fun LessonScreen(
 
                                             localAudioPath = path
                                             isDownloaded = true
-                                            audioPlayer.prepare(path) // Prepare with local file
+                                            globalAudioPlayer.prepare(path) // Prepare with local file
                                             Toast.makeText(context, "دانلود کامل شد!", Toast.LENGTH_SHORT).show()
                                         } else {
                                             Toast.makeText(context, "خطا در دانلود", Toast.LENGTH_SHORT).show()
@@ -172,7 +204,7 @@ fun LessonScreen(
                                             isDownloaded = false
                                             // Re-prepare audio with original URL
                                             uiState.lesson?.audioUrl?.let { url ->
-                                                audioPlayer.prepare(url)
+                                                globalAudioPlayer.prepare(url)
                                             }
                                             Toast.makeText(context, "فایل حذف شد", Toast.LENGTH_SHORT).show()
                                         } else {

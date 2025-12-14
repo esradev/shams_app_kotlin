@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -21,9 +22,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import ir.wpstorm.shams.ShamsApplication
 import ir.wpstorm.shams.data.db.DownloadedAudioEntity
-import ir.wpstorm.shams.player.AudioPlayer
 import ir.wpstorm.shams.ui.theme.Emerald700
+import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
+import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModelFactory
 import ir.wpstorm.shams.viewmodel.SettingsViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -38,7 +42,12 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val audioPlayer = remember { AudioPlayer(context) }
+    val application = context.applicationContext as ShamsApplication
+
+    val globalAudioPlayerViewModel: GlobalAudioPlayerViewModel = viewModel(
+        factory = GlobalAudioPlayerViewModelFactory(application.globalAudioPlayer)
+    )
+    val globalPlayerState by globalAudioPlayerViewModel.uiState
 
     // State for confirmation dialogs
     var showDeleteAllDialog by remember { mutableStateOf(false) }
@@ -167,11 +176,15 @@ fun SettingsScreen(
                         audio = audio,
                         onDelete = { audioToDelete = audio },
                         onPlay = {
-                            audioPlayer.prepare(audio.filePath)
-                            audioPlayer.play()
-                            viewModel.updatePlayInfo(audio.lessonId)
+                            if (globalPlayerState.currentAudio?.lessonId == audio.lessonId && globalPlayerState.isPlaying) {
+                                globalAudioPlayerViewModel.togglePlayPause()
+                            } else {
+                                globalAudioPlayerViewModel.playAudio(audio)
+                                viewModel.updatePlayInfo(audio.lessonId)
+                            }
                         },
-                        onNavigateToLesson = { onNavigateToLesson(audio.lessonId) }
+                        onNavigateToLesson = { onNavigateToLesson(audio.lessonId) },
+                        isCurrentlyPlaying = globalPlayerState.currentAudio?.lessonId == audio.lessonId && globalPlayerState.isPlaying
                     )
                 }
             } else {
@@ -271,34 +284,32 @@ fun SettingsScreen(
             title = {
                 Text(
                     text = "حذف همه فایل‌ها",
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    textAlign = TextAlign.Right
                 )
             },
             text = {
                 Text(
                     text = "آیا مطمئن هستید که می‌خواهید همه فایل‌های دانلود شده را حذف کنید؟ این عمل قابل بازگشت نیست.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Right
                 )
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         viewModel.clearAllDownloads()
                         showDeleteAllDialog = false
                     }
                 ) {
-                    Text(
-                        text = "حذف",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Text("حذف همه")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteAllDialog = false }) {
-                    Text(
-                        text = "انصراف",
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Text("انصراف")
                 }
             }
         )
@@ -311,34 +322,32 @@ fun SettingsScreen(
             title = {
                 Text(
                     text = "حذف فایل",
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    textAlign = TextAlign.Right
                 )
             },
             text = {
                 Text(
                     text = "آیا مطمئن هستید که می‌خواهید \"${audio.title}\" را حذف کنید؟",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Right
                 )
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         viewModel.deleteAudio(audio)
                         audioToDelete = null
                     }
                 ) {
-                    Text(
-                        text = "حذف",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Text("حذف فایل")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { audioToDelete = null }) {
-                    Text(
-                        text = "انصراف",
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Text("انصراف")
                 }
             }
         )
@@ -351,6 +360,7 @@ private fun DownloadedAudioItem(
     onDelete: () -> Unit,
     onPlay: () -> Unit,
     onNavigateToLesson: () -> Unit,
+    isCurrentlyPlaying: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -423,12 +433,12 @@ private fun DownloadedAudioItem(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PlayArrow,
+                        imageVector = if (isCurrentlyPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("پخش")
+                    Text(if (isCurrentlyPlaying) "توقف" else "پخش")
                 }
 
                 OutlinedButton(

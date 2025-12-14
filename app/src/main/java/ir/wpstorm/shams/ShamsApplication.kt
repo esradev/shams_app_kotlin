@@ -6,6 +6,7 @@ import ir.wpstorm.shams.data.db.AppDatabase
 import ir.wpstorm.shams.data.repository.CategoryRepository
 import ir.wpstorm.shams.data.repository.DownloadedAudioRepository
 import ir.wpstorm.shams.data.repository.LessonRepository
+import ir.wpstorm.shams.player.AudioPlayer
 
 class ShamsApplication : Application() {
 
@@ -27,6 +28,11 @@ class ShamsApplication : Application() {
     val downloadedAudioRepository by lazy {
         Log.d("ShamsApplication", "Initializing downloaded audio repository")
         DownloadedAudioRepository(database.downloadedAudioDao())
+    }
+
+    val globalAudioPlayer by lazy {
+        Log.d("ShamsApplication", "Initializing global audio player")
+        AudioPlayer(this)
     }
 
     override fun onCreate() {
