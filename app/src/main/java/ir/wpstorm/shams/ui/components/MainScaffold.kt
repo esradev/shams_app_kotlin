@@ -36,19 +36,12 @@ fun MainScaffold(
     Scaffold(
         topBar = {
             AppHeader(
-                title = pageTitle,
+                title = if (isHome) "شمس المعارف" else pageTitle,
                 showBackButton = showBackButton,
-                isHome = isHome,
-                showSearchIcon = currentDestination != "search", // Hide search icon on search page
                 onBackClick = {
                     navController.popBackStack()
                 },
                 onThemeToggle = themeState.toggleTheme,
-                onSearchClick = {
-                    if (currentDestination != "search") {
-                        navController.navigate("search")
-                    }
-                },
                 isDarkTheme = themeState.isDarkTheme
             )
         },

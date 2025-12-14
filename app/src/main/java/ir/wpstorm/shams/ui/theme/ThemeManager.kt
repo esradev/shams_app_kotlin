@@ -34,16 +34,14 @@ fun rememberThemeState(themeManager: ThemeManager): ThemeState {
     val isDarkTheme by themeManager.isDarkTheme.collectAsState(initial = false)
     val scope = rememberCoroutineScope()
 
-    return remember {
-        ThemeState(
-            isDarkTheme = isDarkTheme,
-            toggleTheme = {
-                scope.launch {
-                    themeManager.setDarkTheme(!isDarkTheme)
-                }
+    return ThemeState(
+        isDarkTheme = isDarkTheme,
+        toggleTheme = {
+            scope.launch {
+                themeManager.setDarkTheme(!isDarkTheme)
             }
-        )
-    }
+        }
+    )
 }
 
 data class ThemeState(
