@@ -5,16 +5,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
+import ir.wpstorm.shams.ShamsApplication
 import ir.wpstorm.shams.ui.screens.categories.CategoryScreen
 import ir.wpstorm.shams.ui.screens.lessons.LessonScreen
 import ir.wpstorm.shams.ui.screens.lessons.LessonsListScreen
 import ir.wpstorm.shams.ui.screens.search.SearchScreen
 import ir.wpstorm.shams.ui.screens.settings.SettingsScreen
+import ir.wpstorm.shams.viewmodel.SettingsViewModel
+import ir.wpstorm.shams.viewmodel.SettingsViewModelFactory
 
 @Composable
 fun NavGraph(
@@ -90,9 +95,19 @@ fun NavGraph(
 
         // Settings screen
         composable("settings") {
+            val context = LocalContext.current
+            val application = context.applicationContext as ShamsApplication
+            val repository = application.downloadedAudioRepository
+            val factory = SettingsViewModelFactory(repository)
+            val viewModel: SettingsViewModel = viewModel(factory = factory)
+
             SettingsScreen(
                 onBack = {
                     navController.popBackStack()
+                },
+                viewModel = viewModel,
+                onNavigateToLesson = { lessonId ->
+                    navController.navigate("lesson/$lessonId")
                 }
             )
         }

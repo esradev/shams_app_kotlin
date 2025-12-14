@@ -8,20 +8,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ir.wpstorm.shams.data.db.DownloadedAudioEntity
-import ir.wpstorm.shams.ui.theme.Emerald400
+import ir.wpstorm.shams.player.AudioPlayer
 import ir.wpstorm.shams.ui.theme.Emerald700
+import ir.wpstorm.shams.viewmodel.SettingsViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,13 +33,16 @@ import java.util.*
 fun SettingsScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    downloadedAudios: List<DownloadedAudioEntity> = emptyList(),
-    onDeleteAudio: (DownloadedAudioEntity) -> Unit = {},
-    onPlayAudio: (DownloadedAudioEntity) -> Unit = {},
-    onClearAllDownloads: () -> Unit = {}
+    viewModel: SettingsViewModel,
+    onNavigateToLesson: (Int) -> Unit = {}
 ) {
-    var offlineMode by remember { mutableStateOf(false) }
-    var autoDownload by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val audioPlayer = remember { AudioPlayer(context) }
+
+    // State for confirmation dialogs
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
+    var audioToDelete by remember { mutableStateOf<DownloadedAudioEntity?>(null) }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         LazyColumn(
@@ -69,8 +75,8 @@ fun SettingsScreen(
                         SettingSwitch(
                             title = "حالت آفلاین",
                             description = "فقط از دروس دانلود شده استفاده کن",
-                            checked = offlineMode,
-                            onCheckedChange = { offlineMode = it }
+                            checked = uiState.offlineMode,
+                            onCheckedChange = viewModel::setOfflineMode
                         )
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -78,8 +84,8 @@ fun SettingsScreen(
                         SettingSwitch(
                             title = "دانلود خودکار صوت",
                             description = "دانلود خودکار صوت درس‌ها",
-                            checked = autoDownload,
-                            onCheckedChange = { autoDownload = it }
+                            checked = uiState.autoDownload,
+                            onCheckedChange = viewModel::setAutoDownload
                         )
                     }
                 }
@@ -119,23 +125,23 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = "تعداد: ${downloadedAudios.size} فایل",
+                            text = "تعداد: ${uiState.downloadedAudios.size} فایل",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
-                        val totalSize = downloadedAudios.sumOf { it.fileSize }
+                        val totalSize = uiState.downloadedAudios.sumOf { it.fileSize }
                         Text(
                             text = "حجم کل: ${formatFileSize(totalSize)}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
-                        if (downloadedAudios.isNotEmpty()) {
+                        if (uiState.downloadedAudios.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(12.dp))
 
                             OutlinedButton(
-                                onClick = onClearAllDownloads,
+                                onClick = { showDeleteAllDialog = true },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = MaterialTheme.colorScheme.error
@@ -155,12 +161,17 @@ fun SettingsScreen(
             }
 
             // Downloaded Audio Files List
-            if (downloadedAudios.isNotEmpty()) {
-                items(downloadedAudios) { audio ->
+            if (uiState.downloadedAudios.isNotEmpty()) {
+                items(uiState.downloadedAudios) { audio ->
                     DownloadedAudioItem(
                         audio = audio,
-                        onDelete = { onDeleteAudio(audio) },
-                        onPlay = { onPlayAudio(audio) }
+                        onDelete = { audioToDelete = audio },
+                        onPlay = {
+                            audioPlayer.prepare(audio.filePath)
+                            audioPlayer.play()
+                            viewModel.updatePlayInfo(audio.lessonId)
+                        },
+                        onNavigateToLesson = { onNavigateToLesson(audio.lessonId) }
                     )
                 }
             } else {
@@ -183,6 +194,33 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center
                             )
+                        }
+                    }
+                }
+            }
+
+            // Error handling
+            uiState.error?.let { errorMessage ->
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = errorMessage,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.weight(1f)
+                            )
+                            TextButton(onClick = viewModel::clearError) {
+                                Text("باشه")
+                            }
                         }
                     }
                 }
@@ -225,6 +263,86 @@ fun SettingsScreen(
             }
         }
     }
+
+    // Delete All Confirmation Dialog
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = {
+                Text(
+                    text = "حذف همه فایل‌ها",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                Text(
+                    text = "آیا مطمئن هستید که می‌خواهید همه فایل‌های دانلود شده را حذف کنید؟ این عمل قابل بازگشت نیست.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearAllDownloads()
+                        showDeleteAllDialog = false
+                    }
+                ) {
+                    Text(
+                        text = "حذف",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog = false }) {
+                    Text(
+                        text = "انصراف",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        )
+    }
+
+    // Single Audio Delete Confirmation Dialog
+    audioToDelete?.let { audio ->
+        AlertDialog(
+            onDismissRequest = { audioToDelete = null },
+            title = {
+                Text(
+                    text = "حذف فایل",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                Text(
+                    text = "آیا مطمئن هستید که می‌خواهید \"${audio.title}\" را حذف کنید؟",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteAudio(audio)
+                        audioToDelete = null
+                    }
+                ) {
+                    Text(
+                        text = "حذف",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { audioToDelete = null }) {
+                    Text(
+                        text = "انصراف",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -232,6 +350,7 @@ private fun DownloadedAudioItem(
     audio: DownloadedAudioEntity,
     onDelete: () -> Unit,
     onPlay: () -> Unit,
+    onNavigateToLesson: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -310,6 +429,19 @@ private fun DownloadedAudioItem(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("پخش")
+                }
+
+                OutlinedButton(
+                    onClick = onNavigateToLesson,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("درس")
                 }
 
                 OutlinedButton(
