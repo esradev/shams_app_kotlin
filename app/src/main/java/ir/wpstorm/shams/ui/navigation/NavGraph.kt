@@ -1,6 +1,10 @@
 package ir.wpstorm.shams.ui.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,11 +18,15 @@ import ir.wpstorm.shams.ui.screens.settings.SettingsScreen
 
 @Composable
 fun NavGraph(
-    navController: NavHostController
+    navController: NavHostController,
+    paddingValues: PaddingValues
 ) {
     NavHost(
         navController = navController,
-        startDestination = "categories"
+        startDestination = "categories",
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
     ) {
         // Categories screen
         composable("categories") {
