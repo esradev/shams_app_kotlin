@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="40"
+    android:viewportHeight="40">
+
+    <!-- Background circle -->
+    <path
+        android:pathData="M20,0A20,20 0,0 1,40 20A20,20 0,0 1,20 40A20,20 0,0 1,0 20A20,20 0,0 1,20 0z"
+        android:fillColor="#6B7280"/>
+
+    <!-- Avatar icon -->
+    <path
+        android:pathData="M20,8A6,6 0,1 1,8 14A6,6 0,0 1,20 8ZM20,32C26.627,32 32,27.373 32,21V20.5C32,18.567 30.433,17 28.5,17H11.5C9.567,17 8,18.567 8,20.5V21C8,27.373 13.373,32 20,32Z"
+        android:fillColor="#FFFFFF"/>
+</vector>
+

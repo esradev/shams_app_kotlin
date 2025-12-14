@@ -16,7 +16,10 @@ data class CategoryUiState(
 
 data class CategoryItem(
     val id: Int,
-    val name: String
+    val name: String,
+    val description: String = "",
+    val parent: Int = 0,
+    val count: Int = 0
 )
 
 class CategoryViewModel(private val repository: CategoryRepository) : ViewModel() {

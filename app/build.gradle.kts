@@ -43,6 +43,13 @@ android {
 dependencies {
     // Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
+
+    // Image Loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // System UI Controller for status bar
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")
 
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")

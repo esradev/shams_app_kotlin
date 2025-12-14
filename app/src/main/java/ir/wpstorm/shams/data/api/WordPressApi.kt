@@ -35,7 +35,10 @@ interface WordPressApi {
 
 data class CategoryDto(
     val id: Int,
-    val name: String
+    val name: String,
+    val description: String = "",
+    val parent: Int = 0,
+    val count: Int = 0
 )
 
 data class PostDto(
