@@ -34,11 +34,80 @@ class LessonRepository(private val lessonDao: LessonDao) {
             entities
         } catch (e: Exception) {
             Log.e("LessonRepository", "API call failed: ${e.message}", e)
-            // 3️⃣ On error, return cached lessons
+            // 3️⃣ On error, return cached lessons or mock data
             val cachedLessons = lessonDao.getLessonsByCategory(categoryId)
-            Log.d("LessonRepository", "Returning ${cachedLessons.size} cached lessons")
-            cachedLessons
+            if (cachedLessons.isNotEmpty()) {
+                Log.d("LessonRepository", "Returning ${cachedLessons.size} cached lessons")
+                cachedLessons
+            } else {
+                Log.d("LessonRepository", "No cached lessons, returning mock data")
+                getMockLessonsForCategory(categoryId)
+            }
         }
+    }
+
+    private fun getMockLessonsForCategory(categoryId: Int): List<LessonEntity> {
+        return listOf(
+            LessonEntity(
+                id = (categoryId * 1000) + 1,
+                title = "جلسه اول - مقدمات و اصول کلی",
+                content = """
+                    <div dir="rtl">
+                        <h3>بسم الله الرحمن الرحیم</h3>
+                        <p>در این جلسه به بررسی مقدمات و اصول کلی می‌پردازیم که پایه و اساس درک صحیح مباحث بعدی است.</p>
+                        
+                        <h4>سرفصل‌های مطرح شده:</h4>
+                        <ul>
+                            <li>تعریف و مفهوم‌شناسی اصطلاحات کلیدی</li>
+                            <li>پیش‌نیازهای علمی و فرهنگی</li>
+                            <li>روش‌شناسی مطالعه و تحقیق</li>
+                            <li>منابع و مراجع اصلی</li>
+                        </ul>
+                        
+                        <p>ان‌شاء‌الله در جلسات آینده وارد مباحث تخصصی‌تر خواهیم شد.</p>
+                    </div>
+                """.trimIndent(),
+                audioUrl = "https://example.com/audio/lesson${categoryId}_1.mp3",
+                categoryId = categoryId
+            ),
+            LessonEntity(
+                id = (categoryId * 1000) + 2,
+                title = "جلسه دوم - تاریخچه و پیشینه",
+                content = """
+                    <div dir="rtl">
+                        <p>در این جلسه به بررسی تاریخچه و پیشینه مبحث می‌پردازیم.</p>
+                        
+                        <h4>نکات مهم این جلسه:</h4>
+                        <p>مطالعه تطبیقی دیدگاه‌های مختلف علمای گذشته و معاصر در این زمینه ضروری است.</p>
+                        
+                        <blockquote>
+                            <p>همان‌طور که علمای بزرگ ما فرموده‌اند، فهم درست مسائل نیازمند دقت و تأمل است.</p>
+                        </blockquote>
+                    </div>
+                """.trimIndent(),
+                audioUrl = "https://example.com/audio/lesson${categoryId}_2.mp3",
+                categoryId = categoryId
+            ),
+            LessonEntity(
+                id = (categoryId * 1000) + 3,
+                title = "جلسه سوم - مباحث کاربردی",
+                content = """
+                    <div dir="rtl">
+                        <h3>مباحث عملی و کاربردی</h3>
+                        <p>در این بخش به جنبه‌های عملی و کاربردی مطالب پرداخته‌ایم.</p>
+                        
+                        <h4>مثال‌های عملی:</h4>
+                        <ol>
+                            <li>مسئله اول و راه‌حل آن</li>
+                            <li>مسئله دوم و تحلیل جامع</li>
+                            <li>نتیجه‌گیری و ارائه راهکار</li>
+                        </ol>
+                    </div>
+                """.trimIndent(),
+                audioUrl = "https://example.com/audio/lesson${categoryId}_3.mp3",
+                categoryId = categoryId
+            )
+        )
     }
 
     // 🔹 Fetch single lesson by ID
@@ -60,9 +129,40 @@ class LessonRepository(private val lessonDao: LessonDao) {
             entity
         } catch (e: Exception) {
             Log.e("LessonRepository", "Failed to fetch lesson $lessonId: ${e.message}", e)
-            // Fallback to local DB
-            lessonDao.getLessonById(lessonId)
+            // Fallback to local DB or mock data
+            lessonDao.getLessonById(lessonId) ?: getMockLessonById(lessonId)
         }
+    }
+
+    private fun getMockLessonById(lessonId: Int): LessonEntity {
+        val categoryId = lessonId / 1000
+        val lessonNumber = lessonId % 1000
+
+        return LessonEntity(
+            id = lessonId,
+            title = "جلسه $lessonNumber - نمونه درس شماره $lessonNumber",
+            content = """
+                <div dir="rtl">
+                    <h3>بسم الله الرحمن الرحیم</h3>
+                    <p>این محتوای نمونه برای درس شماره $lessonNumber است که جهت آزمایش UI طراحی شده است.</p>
+                    
+                    <h4>مطالب این جلسه:</h4>
+                    <ul>
+                        <li>بحث و بررسی مسائل اساسی</li>
+                        <li>تحلیل دیدگاه‌های مختلف</li>
+                        <li>ارائه راهکارهای عملی</li>
+                    </ul>
+                    
+                    <p>ان‌شاء‌الله این مطالب مفید واقع شود.</p>
+                    
+                    <blockquote>
+                        <p>علم طلب کردن بر هر مسلمان فرض است.</p>
+                    </blockquote>
+                </div>
+            """.trimIndent(),
+            audioUrl = "https://example.com/audio/lesson$lessonId.mp3",
+            categoryId = categoryId
+        )
     }
 
     // 🔹 Search lessons
