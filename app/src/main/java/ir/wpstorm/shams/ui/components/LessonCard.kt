@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -65,27 +66,12 @@ fun LessonCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left side: Chevron icon indicating clickable
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = "باز کردن درس",
-                    tint = if (MaterialTheme.colorScheme.surface == Color.White) {
-                        Emerald700
-                    } else {
-                        Emerald400
-                    },
-                    modifier = Modifier.size(24.dp)
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
                 // Right side: Lesson content
                 androidx.compose.foundation.layout.Column(
-                    modifier = Modifier.weight(10f),
-                    horizontalAlignment = Alignment.End
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.Start
                 ) {
                     Text(
                         text = lesson.title,
@@ -136,6 +122,20 @@ fun LessonCard(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Left side: Chevron icon indicating clickable
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "باز کردن درس",
+                    tint = if (MaterialTheme.colorScheme.surface == Color.White) {
+                        Emerald700
+                    } else {
+                        Emerald400
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
