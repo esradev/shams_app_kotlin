@@ -18,6 +18,12 @@ interface LessonDao {
     @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY id ASC")
     suspend fun getLessonsByCategorySync(categoryId: Int): List<LessonEntity>
 
+    @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY created_at DESC")
+    suspend fun getLessonsByCategoryByDateDesc(categoryId: Int): List<LessonEntity>
+
+    @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY created_at ASC")
+    suspend fun getLessonsByCategoryByDateAsc(categoryId: Int): List<LessonEntity>
+
     @Query("SELECT * FROM lessons WHERE id = :id")
     suspend fun getLessonById(id: Int): LessonEntity?
 

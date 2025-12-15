@@ -9,7 +9,7 @@ interface WordPressApi {
     // 🔹 Categories = Courses (only child categories with posts)
     @GET("wp-json/wp/v2/categories")
     suspend fun getCategories(
-        @Query("per_page") perPage: Int = 100,
+        @Query("per_page") perPage: Int = 20,
         @Query("hide_empty") hideEmpty: Boolean = true  // Only categories with posts
     ): List<CategoryDto>
 
@@ -17,7 +17,10 @@ interface WordPressApi {
     @GET("wp-json/wp/v2/posts")
     suspend fun getPostsByCategory(
         @Query("categories") categoryId: Int,
-        @Query("per_page") perPage: Int = 100
+        @Query("per_page") perPage: Int = 20,
+        @Query("page") page: Int = 1,
+        @Query("orderby") orderBy: String = "date",
+        @Query("order") order: String = "desc"
     ): List<PostDto>
 
     // 🔹 Single Lesson
@@ -30,7 +33,7 @@ interface WordPressApi {
     @GET("wp-json/wp/v2/posts")
     suspend fun searchPosts(
         @Query("search") query: String,
-        @Query("per_page") perPage: Int = 100
+        @Query("per_page") perPage: Int = 20
     ): List<PostDto>
 }
 

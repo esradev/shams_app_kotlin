@@ -10,16 +10,22 @@ class LessonRepository(private val lessonDao: LessonDao) {
     private val api = ApiClient.wordpressApi
 
     // 🔹 Fetch lessons by category - Offline-first approach with Flow
-    suspend fun getLessonsByCategory(categoryId: Int): List<LessonEntity> {
+    suspend fun getLessonsByCategory(
+        categoryId: Int,
+        page: Int = 1,
+        perPage: Int = 20,
+        orderBy: String = "date",
+        order: String = "desc"
+    ): List<LessonEntity> {
         return try {
-            Log.d("LessonRepository", "Fetching lessons for category: $categoryId")
+            Log.d("LessonRepository", "Fetching lessons for category: $categoryId, page: $page")
 
             // 1️⃣ Check for cached data first
             val cachedLessons = lessonDao.getLessonsByCategorySync(categoryId)
 
             // 2️⃣ Try API to get fresh data
             try {
-                val apiLessons = api.getPostsByCategory(categoryId)
+                val apiLessons = api.getPostsByCategory(categoryId, perPage, page, orderBy, order)
                 Log.d("LessonRepository", "API returned ${apiLessons.size} lessons")
 
                 val entities = apiLessons.map { dto ->
@@ -36,7 +42,11 @@ class LessonRepository(private val lessonDao: LessonDao) {
                     )
                 }
 
-                // 3️⃣ Save to local DB
+                // 3️⃣ Save to local DB (replace existing data for this page)
+                if (page == 1) {
+                    // Clear existing lessons for this category when loading first page
+                    lessonDao.deleteLessonsByCategory(categoryId)
+                }
                 lessonDao.insertLessons(entities)
                 Log.d("LessonRepository", "Saved ${entities.size} lessons to database")
 
@@ -44,27 +54,34 @@ class LessonRepository(private val lessonDao: LessonDao) {
             } catch (networkException: Exception) {
                 Log.e("LessonRepository", "API call failed: ${networkException.message}")
 
-                // 4️⃣ If network fails, return cached data if available
-                if (cachedLessons.isNotEmpty()) {
+                // 4️⃣ If network fails, return cached data if available (only for first page)
+                if (cachedLessons.isNotEmpty() && page == 1) {
                     Log.d("LessonRepository", "Returning ${cachedLessons.size} cached lessons")
                     cachedLessons
-                } else {
+                } else if (page == 1) {
                     Log.d("LessonRepository", "No cached lessons, returning mock data")
                     val mockLessons = getMockLessonsForCategory(categoryId)
                     lessonDao.insertLessons(mockLessons) // Cache mock data too
                     mockLessons
+                } else {
+                    // For pages other than 1, just return empty list if no network
+                    emptyList()
                 }
             }
         } catch (e: Exception) {
             Log.e("LessonRepository", "General error: ${e.message}", e)
-            // 5️⃣ Fallback to mock data
-            val mockLessons = getMockLessonsForCategory(categoryId)
-            try {
-                lessonDao.insertLessons(mockLessons)
-            } catch (dbException: Exception) {
-                Log.e("LessonRepository", "Failed to save mock data: ${dbException.message}")
+            // 5️⃣ Fallback to mock data only for first page
+            if (page == 1) {
+                val mockLessons = getMockLessonsForCategory(categoryId)
+                try {
+                    lessonDao.insertLessons(mockLessons)
+                } catch (dbException: Exception) {
+                    Log.e("LessonRepository", "Failed to save mock data: ${dbException.message}")
+                }
+                mockLessons
+            } else {
+                emptyList()
             }
-            mockLessons
         }
     }
 
