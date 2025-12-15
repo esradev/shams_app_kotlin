@@ -16,6 +16,7 @@ import ir.wpstorm.shams.ShamsApplication
 import ir.wpstorm.shams.ui.screens.categories.CategoryScreen
 import ir.wpstorm.shams.ui.screens.lessons.LessonScreen
 import ir.wpstorm.shams.ui.screens.lessons.LessonsListScreen
+import ir.wpstorm.shams.ui.screens.progress.ProgressScreen
 import ir.wpstorm.shams.ui.screens.search.SearchScreen
 import ir.wpstorm.shams.ui.screens.settings.SettingsScreen
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
@@ -94,6 +95,18 @@ fun NavGraph(
                 },
                 onBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        // Progress screen
+        composable("my-progress") {
+            ProgressScreen(
+                onCategoryClick = { categoryId ->
+                    navController.navigate("lessons/$categoryId")
+                },
+                onContinueLearning = { categoryId, lessonId ->
+                    navController.navigate("lesson/$lessonId")
                 }
             )
         }

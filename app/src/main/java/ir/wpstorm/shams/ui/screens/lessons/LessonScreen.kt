@@ -2,16 +2,25 @@ package ir.wpstorm.shams.ui.screens.lessons
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +49,8 @@ import ir.wpstorm.shams.ui.components.GlobalError
 import ir.wpstorm.shams.ui.components.GlobalLoading
 import ir.wpstorm.shams.ui.components.HighlightableHtmlRenderer
 import ir.wpstorm.shams.ui.components.SearchNavigationBar
+import ir.wpstorm.shams.ui.theme.Emerald400
+import ir.wpstorm.shams.ui.theme.Emerald700
 import ir.wpstorm.shams.ui.theme.Gray50
 import ir.wpstorm.shams.ui.theme.Gray700
 import ir.wpstorm.shams.ui.theme.Gray900
@@ -62,6 +73,7 @@ fun LessonScreen(
     val application = context.applicationContext as ir.wpstorm.shams.ShamsApplication
     val repository = application.lessonRepository
     val downloadedAudioRepository = application.downloadedAudioRepository
+    val progressRepository = application.progressRepository
     val factory = LessonViewModelFactory(repository)
     val viewModel: LessonViewModel = viewModel(factory = factory)
 
@@ -80,6 +92,9 @@ fun LessonScreen(
     var totalMatches by remember { mutableStateOf(0) }
     var currentMatchIndex by remember { mutableStateOf(0) }
 
+    // Completion tracking state
+    var isCompleted by remember { mutableStateOf(false) }
+
     LaunchedEffect(lessonId) {
         viewModel.loadLesson(lessonId)
         // Check if file is already downloaded using database
@@ -93,6 +108,12 @@ fun LessonScreen(
                 // File no longer exists, remove from database
                 downloadedAudioRepository.deleteDownloadedAudio(downloadedAudio)
             }
+        }
+        // Check if lesson is completed
+        isCompleted = progressRepository.isLessonCompleted(lessonId)
+        // Update last accessed lesson
+        uiState.lesson?.categoryId?.let { categoryId ->
+            progressRepository.updateLastAccessedLesson(categoryId, lessonId)
         }
     }
 
@@ -320,6 +341,70 @@ fun LessonScreen(
                                 textAlign = TextAlign.Right,
                                 modifier = Modifier.fillMaxWidth()
                             )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Mark as complete button
+                            if (isCompleted) {
+                                Button(
+                                    onClick = {
+                                        scope.launch {
+                                            lesson.categoryId?.let { categoryId ->
+                                                progressRepository.unmarkLessonAsCompleted(lessonId, categoryId)
+                                                isCompleted = false
+                                                Toast.makeText(context, "علامت تکمیل حذف شد", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (MaterialTheme.colorScheme.surface == Color.White) {
+                                            Emerald700
+                                        } else {
+                                            Emerald400
+                                        }
+                                    )
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.size(8.dp))
+                                        Text("تکمیل شده")
+                                    }
+                                }
+                            } else {
+                                OutlinedButton(
+                                    onClick = {
+                                        scope.launch {
+                                            lesson.categoryId?.let { categoryId ->
+                                                progressRepository.markLessonAsCompleted(lessonId, categoryId)
+                                                isCompleted = true
+                                                Toast.makeText(context, "درس به عنوان تکمیل شده علامت‌گذاری شد", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.size(8.dp))
+                                        Text("علامت‌گذاری به عنوان تکمیل شده")
+                                    }
+                                }
+                            }
                         }
 
                         // Lesson content

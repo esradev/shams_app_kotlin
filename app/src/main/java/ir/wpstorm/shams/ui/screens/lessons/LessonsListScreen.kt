@@ -89,6 +89,10 @@ fun LessonsListScreen(
     val categoryViewModel: CategoryViewModel = viewModel(factory = categoryFactory)
     val categoryUiState by categoryViewModel.uiState.collectAsState()
 
+    // Progress Repository
+    val progressRepository = application.progressRepository
+    val completedLessons by progressRepository.getCompletedLessonsByCategory(categoryId).collectAsState(initial = emptyList())
+
     // Expandable description state
     var isDescriptionExpanded by remember { mutableStateOf(false) }
 
@@ -370,11 +374,13 @@ fun LessonsListScreen(
                         // Lessons list
                         if (lessonUiState.lessons.isNotEmpty()) {
                             itemsIndexed(lessonUiState.lessons) { index, lesson ->
+                                val isCompleted = completedLessons.any { it.lessonId == lesson.id }
                                 LessonCard(
                                     lesson = lesson,
                                     lessonNumber = index + 1,
                                     onClick = { onLessonClick(lesson.id) },
-                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    isCompleted = isCompleted
                                 )
                             }
                         } else {

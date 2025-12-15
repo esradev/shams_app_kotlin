@@ -6,21 +6,22 @@ import ir.wpstorm.shams.data.db.AppDatabase
 import ir.wpstorm.shams.data.repository.CategoryRepository
 import ir.wpstorm.shams.data.repository.DownloadedAudioRepository
 import ir.wpstorm.shams.data.repository.LessonRepository
+import ir.wpstorm.shams.data.repository.ProgressRepository
 import ir.wpstorm.shams.player.AudioPlayer
 
 class ShamsApplication : Application() {
 
-    val database by lazy { 
+    val database by lazy {
         Log.d("ShamsApplication", "Initializing database")
-        AppDatabase.getDatabase(this) 
+        AppDatabase.getDatabase(this)
     }
-    
-    val lessonRepository by lazy { 
+
+    val lessonRepository by lazy {
         Log.d("ShamsApplication", "Initializing lesson repository")
-        LessonRepository(database.lessonDao()) 
+        LessonRepository(database.lessonDao())
     }
-    
-    val categoryRepository by lazy { 
+
+    val categoryRepository by lazy {
         Log.d("ShamsApplication", "Initializing category repository")
         CategoryRepository(database.categoryDao())
     }
@@ -28,6 +29,15 @@ class ShamsApplication : Application() {
     val downloadedAudioRepository by lazy {
         Log.d("ShamsApplication", "Initializing downloaded audio repository")
         DownloadedAudioRepository(database.downloadedAudioDao())
+    }
+
+    val progressRepository by lazy {
+        Log.d("ShamsApplication", "Initializing progress repository")
+        ProgressRepository(
+            database.completedLessonDao(),
+            database.courseProgressDao(),
+            database.lessonDao()
+        )
     }
 
     val globalAudioPlayer by lazy {

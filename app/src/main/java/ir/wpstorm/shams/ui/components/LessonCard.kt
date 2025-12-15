@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Card
@@ -48,7 +49,8 @@ fun LessonCard(
     lesson: LessonEntity,
     lessonNumber: Int,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isCompleted: Boolean = false
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Card(
@@ -90,6 +92,29 @@ fun LessonCard(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Completion status indicator
+                        if (isCompleted) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "تکمیل شده",
+                                tint = Emerald700,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(end = 4.dp))
+                            Text(
+                                text = "تکمیل شده",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Emerald700,
+                                textAlign = TextAlign.Right
+                            )
+                            Text(
+                                text = " • ",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Gray500,
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            )
+                        }
+
                         // Download status indicator
                         if (lesson.isDownloaded) {
                             Icon(

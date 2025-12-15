@@ -6,8 +6,14 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [LessonEntity::class, CategoryEntity::class, DownloadedAudioEntity::class],
-    version = 5,
+    entities = [
+        LessonEntity::class,
+        CategoryEntity::class,
+        DownloadedAudioEntity::class,
+        CompletedLessonEntity::class,
+        CourseProgressEntity::class
+    ],
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -15,6 +21,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun lessonDao(): LessonDao
     abstract fun categoryDao(): CategoryDao
     abstract fun downloadedAudioDao(): DownloadedAudioDao
+    abstract fun completedLessonDao(): CompletedLessonDao
+    abstract fun courseProgressDao(): CourseProgressDao
 
     companion object {
         @Volatile

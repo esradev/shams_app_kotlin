@@ -32,13 +32,14 @@ fun CustomTabBar(
         ) {
             defaultNavigationItems.forEach { item ->
                 // Skip items that don't exist in current navigation
-                if (item.route == "courses" || item.route == "my-progress") {
+                if (item.route == "courses") {
                     return@forEach
                 }
 
                 val isSelected = when (item.route) {
                     "categories" -> currentDestination == "categories" || currentDestination?.startsWith("lessons/") == true
                     "search" -> currentDestination == "search"
+                    "my-progress" -> currentDestination == "my-progress"
                     "settings" -> currentDestination == "settings"
                     else -> false
                 }
@@ -67,6 +68,11 @@ fun CustomTabBar(
                             }
                             "search" -> {
                                 navController.navigate("search") {
+                                    launchSingleTop = true
+                                }
+                            }
+                            "my-progress" -> {
+                                navController.navigate("my-progress") {
                                     launchSingleTop = true
                                 }
                             }
