@@ -153,4 +153,9 @@ class ProgressRepository(
         completedLessonDao.clearAllCompletedLessons()
         courseProgressDao.clearAllProgress()
     }
+
+    suspend fun getFirstUncompletedLesson(categoryId: Int): Int? {
+        val firstUncompleted = lessonDao.getFirstUncompletedLesson(categoryId)
+        return firstUncompleted?.id
+    }
 }

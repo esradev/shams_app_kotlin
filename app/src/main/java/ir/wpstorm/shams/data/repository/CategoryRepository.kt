@@ -107,6 +107,10 @@ class CategoryRepository(
         return categoryDao.getCategoryCount()
     }
 
+    suspend fun getCategoryById(categoryId: Int): CategoryEntity? {
+        return categoryDao.getCategoryById(categoryId)
+    }
+
     private fun CategoryEntity.toCategoryItem() = CategoryItem(
         id = id,
         name = name,

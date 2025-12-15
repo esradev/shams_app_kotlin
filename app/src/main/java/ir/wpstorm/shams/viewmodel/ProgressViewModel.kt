@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import ir.wpstorm.shams.data.db.CourseProgressEntity
+import ir.wpstorm.shams.data.repository.CategoryRepository
 import ir.wpstorm.shams.data.repository.ProgressRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,11 +21,13 @@ data class CourseProgressWithCategory(
     val progress: CourseProgressEntity,
     val categoryName: String,
     val categoryDescription: String?,
-    val progressPercentage: Int
+    val progressPercentage: Int,
+    val nextUncompletedLessonId: Int?
 )
 
 class ProgressViewModel(
-    private val progressRepository: ProgressRepository
+    private val progressRepository: ProgressRepository,
+    private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProgressUiState())
@@ -40,6 +43,12 @@ class ProgressViewModel(
             try {
                 progressRepository.getAllCourseProgress().collect { progressList ->
                     val progressWithCategories = progressList.map { progress ->
+                        // Fetch category details
+                        val category = categoryRepository.getCategoryById(progress.categoryId)
+
+                        // Get first uncompleted lesson ID
+                        val nextUncompletedLessonId = progressRepository.getFirstUncompletedLesson(progress.categoryId)
+
                         // Calculate percentage
                         val percentage = if (progress.totalLessons > 0) {
                             (progress.completedLessons * 100) / progress.totalLessons
@@ -49,9 +58,10 @@ class ProgressViewModel(
 
                         CourseProgressWithCategory(
                             progress = progress,
-                            categoryName = "درس ${progress.categoryId}", // This should be fetched from CategoryRepository
-                            categoryDescription = null,
-                            progressPercentage = percentage
+                            categoryName = category?.name ?: "درس ${progress.categoryId}",
+                            categoryDescription = category?.description,
+                            progressPercentage = percentage,
+                            nextUncompletedLessonId = nextUncompletedLessonId
                         )
                     }
                     _uiState.value = _uiState.value.copy(
@@ -75,12 +85,13 @@ class ProgressViewModel(
 }
 
 class ProgressViewModelFactory(
-    private val progressRepository: ProgressRepository
+    private val progressRepository: ProgressRepository,
+    private val categoryRepository: CategoryRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ProgressViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ProgressViewModel(progressRepository) as T
+            return ProgressViewModel(progressRepository, categoryRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

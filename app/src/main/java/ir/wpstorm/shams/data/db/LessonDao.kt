@@ -59,4 +59,13 @@ interface LessonDao {
 
     @Query("SELECT * FROM lessons WHERE title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%' ORDER BY updated_at DESC")
     fun searchLessonsFlow(query: String): Flow<List<LessonEntity>>
+
+    @Query("""
+        SELECT * FROM lessons
+        WHERE category_id = :categoryId
+        AND id NOT IN (SELECT lesson_id FROM completed_lessons)
+        ORDER BY id ASC
+        LIMIT 1
+    """)
+    suspend fun getFirstUncompletedLesson(categoryId: Int): LessonEntity?
 }

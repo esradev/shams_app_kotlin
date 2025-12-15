@@ -52,8 +52,6 @@ import ir.wpstorm.shams.ui.theme.Gray50
 import ir.wpstorm.shams.ui.theme.Gray500
 import ir.wpstorm.shams.ui.theme.Gray700
 import ir.wpstorm.shams.ui.theme.Gray900
-import ir.wpstorm.shams.viewmodel.CategoryViewModel
-import ir.wpstorm.shams.viewmodel.CategoryViewModelFactory
 import ir.wpstorm.shams.viewmodel.CourseProgressWithCategory
 import ir.wpstorm.shams.viewmodel.ProgressViewModel
 import ir.wpstorm.shams.viewmodel.ProgressViewModelFactory
@@ -72,13 +70,9 @@ fun ProgressScreen(
     val progressRepository = application.progressRepository
     val categoryRepository = application.categoryRepository
 
-    val progressFactory = ProgressViewModelFactory(progressRepository)
+    val progressFactory = ProgressViewModelFactory(progressRepository, categoryRepository)
     val progressViewModel: ProgressViewModel = viewModel(factory = progressFactory)
     val progressUiState by progressViewModel.uiState.collectAsState()
-
-    val categoryFactory = CategoryViewModelFactory(categoryRepository)
-    val categoryViewModel: CategoryViewModel = viewModel(factory = categoryFactory)
-    val categoryUiState by categoryViewModel.uiState.collectAsState()
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Box(
@@ -145,18 +139,16 @@ fun ProgressScreen(
                         }
 
                         items(progressUiState.courseProgress) { progressItem ->
-                            val category = categoryUiState.categories.find { it.id == progressItem.progress.categoryId }
-
                             ProgressCard(
-                                progressItem = progressItem.copy(
-                                    categoryName = category?.name ?: "درس ${progressItem.progress.categoryId}",
-                                    categoryDescription = category?.description
-                                ),
+                                progressItem = progressItem,
                                 onClick = { onCategoryClick(progressItem.progress.categoryId) },
                                 onContinueLearning = {
+                                    // Use first uncompleted lesson if available, otherwise use last accessed lesson
+                                    val lessonId = progressItem.nextUncompletedLessonId
+                                        ?: progressItem.progress.lastLessonId
                                     onContinueLearning(
                                         progressItem.progress.categoryId,
-                                        progressItem.progress.lastLessonId
+                                        lessonId
                                     )
                                 },
                                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
