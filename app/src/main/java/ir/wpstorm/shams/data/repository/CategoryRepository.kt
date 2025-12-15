@@ -43,6 +43,7 @@ class CategoryRepository(
                         id = dto.id,
                         name = dto.name,
                         description = dto.description,
+                        parent = dto.parent,
                         createdAt = System.currentTimeMillis(),
                         updatedAt = System.currentTimeMillis()
                     )
@@ -90,6 +91,7 @@ class CategoryRepository(
                     id = dto.id,
                     name = dto.name,
                     description = dto.description,
+                    parent = dto.parent,
                     createdAt = System.currentTimeMillis(),
                     updatedAt = System.currentTimeMillis()
                 )
@@ -109,7 +111,7 @@ class CategoryRepository(
         id = id,
         name = name,
         description = description ?: "",
-        parent = 1, // Default parent for child categories
+        parent = parent,
         count = 0 // We could calculate this from lessons if needed
     )
 }
