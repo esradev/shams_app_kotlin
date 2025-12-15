@@ -1,20 +1,45 @@
 package ir.wpstorm.shams.ui.screens.settings
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -22,15 +47,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import ir.wpstorm.shams.ShamsApplication
 import ir.wpstorm.shams.data.db.DownloadedAudioEntity
 import ir.wpstorm.shams.ui.theme.Emerald700
-import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
-import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModelFactory
 import ir.wpstorm.shams.viewmodel.SettingsViewModel
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,13 +63,6 @@ fun SettingsScreen(
     onNavigateToLesson: (Int) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val application = context.applicationContext as ShamsApplication
-
-    val globalAudioPlayerViewModel: GlobalAudioPlayerViewModel = viewModel(
-        factory = GlobalAudioPlayerViewModelFactory(application.globalAudioPlayer)
-    )
-    val globalPlayerState by globalAudioPlayerViewModel.uiState.collectAsStateWithLifecycle()
 
     // State for confirmation dialogs
     var showDeleteAllDialog by remember { mutableStateOf(false) }
@@ -57,7 +72,7 @@ fun SettingsScreen(
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 80.dp) // Add bottom padding for tab bar
         ) {
@@ -176,16 +191,7 @@ fun SettingsScreen(
                     DownloadedAudioItem(
                         audio = audio,
                         onDelete = { audioToDelete = audio },
-                        onPlay = {
-                            if (globalPlayerState.currentAudio?.lessonId == audio.lessonId && globalPlayerState.isPlaying) {
-                                globalAudioPlayerViewModel.togglePlayPause()
-                            } else {
-                                globalAudioPlayerViewModel.playAudio(audio)
-                                viewModel.updatePlayInfo(audio.lessonId)
-                            }
-                        },
-                        onNavigateToLesson = { onNavigateToLesson(audio.lessonId) },
-                        isCurrentlyPlaying = globalPlayerState.currentAudio?.lessonId == audio.lessonId && globalPlayerState.isPlaying
+                        onNavigateToLesson = { onNavigateToLesson(audio.lessonId) }
                     )
                 }
             } else {
@@ -359,9 +365,7 @@ fun SettingsScreen(
 private fun DownloadedAudioItem(
     audio: DownloadedAudioEntity,
     onDelete: () -> Unit,
-    onPlay: () -> Unit,
     onNavigateToLesson: () -> Unit,
-    isCurrentlyPlaying: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -404,22 +408,6 @@ private fun DownloadedAudioItem(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
-                    if (audio.lastPlayed != null) {
-                        Text(
-                            text = "آخرین پخش: ${formatDate(audio.lastPlayed)}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    if (audio.playCount > 0) {
-                        Text(
-                            text = "تعداد پخش: ${audio.playCount}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Emerald700
-                        )
-                    }
                 }
             }
 
@@ -429,19 +417,6 @@ private fun DownloadedAudioItem(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                OutlinedButton(
-                    onClick = onPlay,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = if (isCurrentlyPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(if (isCurrentlyPlaying) "توقف" else "پخش")
-                }
-
                 OutlinedButton(
                     onClick = onNavigateToLesson,
                     modifier = Modifier.weight(1f)

@@ -1,6 +1,5 @@
 package ir.wpstorm.shams.ui.screens.lessons
 
-import android.widget.TextView
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -34,11 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.text.HtmlCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ir.wpstorm.shams.data.db.DownloadedAudioEntity
-import ir.wpstorm.shams.ShamsApplication
 import ir.wpstorm.shams.ui.components.AudioPlayerCompose
 import ir.wpstorm.shams.ui.components.GlobalError
 import ir.wpstorm.shams.ui.components.GlobalLoading
@@ -362,31 +358,4 @@ fun LessonScreen(
             }
         }
     }
-}
-
-@Composable
-fun HtmlRenderer(
-    html: String,
-    modifier: Modifier = Modifier
-) {
-    AndroidView(
-        modifier = modifier,
-        factory = { context ->
-            TextView(context).apply {
-                textDirection = android.view.View.TEXT_DIRECTION_RTL
-                textAlignment = android.view.View.TEXT_ALIGNMENT_TEXT_START
-                setPadding(0, 0, 0, 0)
-                textSize = 16f
-                setLineSpacing(8f, 1.2f) // Better line spacing for readability
-                // Set text color based on theme (you might want to get this from MaterialTheme)
-                setTextColor(android.graphics.Color.parseColor("#374151")) // Gray-700 equivalent
-            }
-        },
-        update = { view ->
-            view.text = HtmlCompat.fromHtml(
-                html,
-                HtmlCompat.FROM_HTML_MODE_COMPACT
-            )
-        }
-    )
 }

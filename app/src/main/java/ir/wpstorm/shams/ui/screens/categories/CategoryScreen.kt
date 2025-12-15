@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ir.wpstorm.shams.ui.components.CourseCard
 import ir.wpstorm.shams.ui.components.EmptyState
 import ir.wpstorm.shams.ui.components.GlobalError
@@ -38,9 +37,7 @@ import ir.wpstorm.shams.viewmodel.CategoryViewModelFactory
 
 @Composable
 fun CategoryScreen(
-    onCategoryClick: (Int) -> Unit,
-    onSearchClick: () -> Unit, // Kept for potential future use
-    onSettingsClick: () -> Unit // Kept for potential future use
+    onCategoryClick: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as ir.wpstorm.shams.ShamsApplication
@@ -93,7 +90,7 @@ fun CategoryScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(MaterialTheme.colorScheme.background),
-                        contentPadding = PaddingValues(bottom = 80.dp) // Add bottom padding for tab bar
+                        contentPadding = PaddingValues(bottom = 30.dp) // Add bottom padding for tab bar
                     ) {
                         item {
                             Column(

@@ -419,51 +419,6 @@ fun LessonsListScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Next button (left side in RTL)
-                                OutlinedButton(
-                                    onClick = { lessonViewModel.goToNextPage() },
-                                    enabled = canGoForward,
-                                    modifier = Modifier
-                                        .background(
-                                            color = if (canGoForward) {
-                                                if (MaterialTheme.colorScheme.surface == Color.White) {
-                                                    Emerald700
-                                                } else {
-                                                    Emerald400
-                                                }
-                                            } else {
-                                                MaterialTheme.colorScheme.surfaceVariant
-                                            },
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .height(40.dp),
-                                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                                        containerColor = Color.Transparent,
-                                        contentColor = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    ),
-                                    border = null
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ChevronLeft,
-                                        contentDescription = "صفحه بعد",
-                                        modifier = Modifier.size(14.dp),
-                                        tint = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "بعدی",
-                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                                        color = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-
-                                // Page info
-                                Text(
-                                    text = "${lessonUiState.currentPage} از ${lessonUiState.totalPages}",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-
                                 // Previous button (right side in RTL)
                                 OutlinedButton(
                                     onClick = { lessonViewModel.goToPreviousPage() },
@@ -499,6 +454,51 @@ fun LessonsListScreen(
                                         contentDescription = "صفحه قبل",
                                         modifier = Modifier.size(14.dp),
                                         tint = if (canGoBack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                // Page info
+                                Text(
+                                    text = "${lessonUiState.currentPage} از ${lessonUiState.totalPages}",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+
+                                // Next button (left side in RTL)
+                                OutlinedButton(
+                                    onClick = { lessonViewModel.goToNextPage() },
+                                    enabled = canGoForward,
+                                    modifier = Modifier
+                                        .background(
+                                            color = if (canGoForward) {
+                                                if (MaterialTheme.colorScheme.surface == Color.White) {
+                                                    Emerald700
+                                                } else {
+                                                    Emerald400
+                                                }
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceVariant
+                                            },
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .height(40.dp),
+                                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                        containerColor = Color.Transparent,
+                                        contentColor = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    border = null
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ChevronLeft,
+                                        contentDescription = "صفحه بعد",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "بعدی",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                                        color = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }

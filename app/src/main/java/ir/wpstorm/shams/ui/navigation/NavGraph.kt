@@ -38,12 +38,6 @@ fun NavGraph(
             CategoryScreen(
                 onCategoryClick = { categoryId ->
                     navController.navigate("lessons/$categoryId")
-                },
-                onSearchClick = {
-                    navController.navigate("search")
-                },
-                onSettingsClick = {
-                    navController.navigate("settings")
                 }
             )
         }
