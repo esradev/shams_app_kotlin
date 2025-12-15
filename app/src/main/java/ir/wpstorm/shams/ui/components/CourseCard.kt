@@ -58,74 +58,85 @@ fun CourseCard(
             modifier = modifier
                 .fillMaxWidth()
                 .clickable { onClick() }
-                .padding(vertical = 4.dp),
+                .padding(vertical = 6.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-            shape = RoundedCornerShape(8.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp)
+                    .padding(20.dp)
             ) {
-                // Course Title
-                Text(
-                    text = course.name,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 20.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Right,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
-                )
-
-                // Course Description
-                if (course.description.isNotEmpty()) {
-                    val cleanDescription = course.description
-                        .replace(Regex("<[^>]+>"), "")
-                        .take(160) + "..."
-
-                    Text(
-                        text = cleanDescription,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Gray500,
-                        textAlign = TextAlign.Right,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
-                    )
-                }
-
-                // Teacher Info Row
+                // Teacher Info Row at the top
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "آیت الله حسینی آملی (حفظه الله)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Gray700,
-                        textAlign = TextAlign.Right
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text(
+                            text = "آیت الله حسینی آملی (حفظه الله)",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Right
+                        )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                        // Category Badge
+                        Row(
+                            modifier = Modifier
+                                .padding(top = 4.dp)
+                                .background(
+                                    color = if (MaterialTheme.colorScheme.surface == Color.White) {
+                                        Emerald50
+                                    } else {
+                                        Emerald700.copy(alpha = 0.3f)
+                                    },
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .padding(horizontal = 10.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "درس خارج",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 11.sp
+                                ),
+                                color = if (MaterialTheme.colorScheme.surface == Color.White) {
+                                    Emerald700
+                                } else {
+                                    Emerald400
+                                }
+                            )
+                            Icon(
+                                imageVector = Icons.Default.BarChart,
+                                contentDescription = "درس خارج",
+                                modifier = Modifier.size(12.dp),
+                                tint = if (MaterialTheme.colorScheme.surface == Color.White) {
+                                    Emerald700
+                                } else {
+                                    Emerald400
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     // Teacher Avatar using local drawable
                     Image(
                         painter = painterResource(id = R.drawable.ic_teacher_avatar),
                         contentDescription = "آیت الله حسینی آملی",
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(56.dp)
                             .clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
@@ -133,89 +144,94 @@ fun CourseCard(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Bottom Row with Category Badge and Stats
+                // Course Title
+                Text(
+                    text = course.name,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Right,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Course Description
+                if (course.description.isNotEmpty()) {
+                    val cleanDescription = course.description
+                        .replace(Regex("<[^>]+>"), "")
+                        .trim()
+                        .take(120) + if (course.description.length > 120) "..." else ""
+
+                    Text(
+                        text = cleanDescription,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontSize = 14.sp,
+                            lineHeight = 22.sp
+                        ),
+                        color = Gray500,
+                        textAlign = TextAlign.Right,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Stats Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Stats (Sessions and Hours)
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Hours
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AccessTime,
-                                contentDescription = "ساعت",
-                                modifier = Modifier.size(12.dp),
-                                tint = Gray400
-                            )
-                            Text(
-                                text = "${(course.count * course.count) / 2} ساعت",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Gray500
-                            )
-                        }
+                    // Duration in hours
+                    val totalMinutes = course.count * 30
+                    val hours = totalMinutes / 60
+                    val minutes = totalMinutes % 60
 
-                        // Sessions
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.MenuBook,
-                                contentDescription = "جلسه",
-                                modifier = Modifier.size(12.dp),
-                                tint = Gray400
-                            )
-                            Text(
-                                text = "${course.count} جلسه",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Gray500
-                            )
-                        }
-                    }
-
-                    // Category Badge
                     Row(
-                        modifier = Modifier
-                            .background(
-                                color = if (MaterialTheme.colorScheme.surface == Color.White) {
-                                    Emerald50
-                                } else {
-                                    Emerald700.copy(alpha = 0.3f)
-                                },
-                                shape = RoundedCornerShape(16.dp)
-                            )
-                            .padding(horizontal = 8.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.BarChart,
-                            contentDescription = "درس خارج",
-                            modifier = Modifier.size(12.dp),
-                            tint = if (MaterialTheme.colorScheme.surface == Color.White) {
-                                Emerald700
-                            } else {
-                                Emerald400
-                            }
-                        )
                         Text(
-                            text = "درس خارج",
-                            style = MaterialTheme.typography.bodySmall.copy(
+                            text = if (minutes > 0) "$hours:${minutes.toString().padStart(2, '0')} ساعت" else "$hours ساعت",
+                            style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium
                             ),
-                            color = if (MaterialTheme.colorScheme.surface == Color.White) {
-                                Emerald700
-                            } else {
-                                Emerald400
-                            }
+                            color = Gray700
+                        )
+                        Icon(
+                            imageVector = Icons.Default.AccessTime,
+                            contentDescription = "مدت زمان",
+                            modifier = Modifier.size(18.dp),
+                            tint = Emerald700
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    // Sessions count
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "${course.count} جلسه",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Gray700
+                        )
+                        Icon(
+                            imageVector = Icons.Default.MenuBook,
+                            contentDescription = "تعداد جلسات",
+                            modifier = Modifier.size(18.dp),
+                            tint = Emerald700
                         )
                     }
                 }
