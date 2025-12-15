@@ -18,7 +18,7 @@ class ShamsApplication : Application() {
 
     val lessonRepository by lazy {
         Log.d("ShamsApplication", "Initializing lesson repository")
-        LessonRepository(database.lessonDao())
+        LessonRepository(database.lessonDao(), database.categoryDao())
     }
 
     val categoryRepository by lazy {

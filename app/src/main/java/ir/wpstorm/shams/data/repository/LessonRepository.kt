@@ -2,12 +2,37 @@ package ir.wpstorm.shams.data.repository
 
 import android.util.Log
 import ir.wpstorm.shams.data.api.ApiClient
+import ir.wpstorm.shams.data.db.CategoryDao
 import ir.wpstorm.shams.data.db.LessonDao
 import ir.wpstorm.shams.data.db.LessonEntity
 
-class LessonRepository(private val lessonDao: LessonDao) {
+class LessonRepository(
+    private val lessonDao: LessonDao,
+    private val categoryDao: CategoryDao
+) {
 
     private val api = ApiClient.wordpressApi
+
+    /**
+     * Selects the preferred category ID from a list of categories.
+     * Prefers child categories (those with a parent) over parent categories.
+     */
+    private suspend fun selectPreferredCategoryId(categoryIds: List<Int>?): Int? {
+        if (categoryIds.isNullOrEmpty()) return null
+        if (categoryIds.size == 1) return categoryIds.first()
+
+        // Check each category to find if any is a child (has a parent)
+        for (categoryId in categoryIds) {
+            val category = categoryDao.getCategoryById(categoryId)
+            if (category != null && category.parent != 0) {
+                // This is a child category, prefer it
+                return categoryId
+            }
+        }
+
+        // If no child category found, return the first one
+        return categoryIds.firstOrNull()
+    }
 
     // 🔹 Fetch lessons by category - Offline-first approach with Flow
     suspend fun getLessonsByCategory(
@@ -34,7 +59,7 @@ class LessonRepository(private val lessonDao: LessonDao) {
                         title = dto.title.rendered,
                         content = dto.content.rendered,
                         audioUrl = dto.meta?.`the-audio-of-the-lesson`,
-                        categoryId = categoryId,
+                        categoryId = selectPreferredCategoryId(dto.categories) ?: categoryId,
                         dateOfLesson = dto.meta?.`date-of-the-lesson`,
                         isDownloaded = false,
                         createdAt = System.currentTimeMillis(),
@@ -203,7 +228,7 @@ class LessonRepository(private val lessonDao: LessonDao) {
                 title = dto.title.rendered,
                 content = dto.content.rendered,
                 audioUrl = dto.meta?.`the-audio-of-the-lesson`,
-                categoryId = dto.categories?.firstOrNull()
+                categoryId = selectPreferredCategoryId(dto.categories)
             )
 
             // Save / update in DB
@@ -263,7 +288,7 @@ class LessonRepository(private val lessonDao: LessonDao) {
                     title = dto.title.rendered,
                     content = dto.content.rendered,
                     audioUrl = dto.meta?.`the-audio-of-the-lesson`,
-                    categoryId = dto.categories?.firstOrNull()
+                    categoryId = selectPreferredCategoryId(dto.categories)
                 )
             }
             // Optional: update DB
