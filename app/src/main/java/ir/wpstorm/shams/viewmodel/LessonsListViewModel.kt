@@ -14,8 +14,9 @@ data class LessonsListUiState(
     val isLoading: Boolean = true,
     val error: String? = null,
     val currentPage: Int = 1,
-    val hasMorePages: Boolean = true,
-    val isLoadingMore: Boolean = false,
+    val totalPages: Int = 1,
+    val postsPerPage: Int = 20,
+    val totalPosts: Int = 0,
     val orderBy: String = "date",
     val order: String = "desc"
 )
@@ -27,31 +28,36 @@ class LessonsListViewModel(private val repository: LessonRepository) : ViewModel
 
     private var currentCategoryId: Int? = null
 
-    fun loadLessonsForCategory(categoryId: Int) {
+    fun loadLessonsForCategory(categoryId: Int, page: Int = 1) {
         currentCategoryId = categoryId
         viewModelScope.launch {
             try {
-                Log.d("LessonsListViewModel", "Loading lessons for category: $categoryId")
+                Log.d("LessonsListViewModel", "Loading lessons for category: $categoryId, page: $page")
                 _uiState.value = _uiState.value.copy(
                     isLoading = true,
-                    lessons = emptyList(),
-                    currentPage = 1,
-                    hasMorePages = true,
                     error = null
                 )
 
+                val currentState = _uiState.value
                 val lessons = repository.getLessonsByCategory(
                     categoryId = categoryId,
-                    page = 1,
-                    orderBy = _uiState.value.orderBy,
-                    order = _uiState.value.order
+                    page = page,
+                    perPage = currentState.postsPerPage,
+                    orderBy = currentState.orderBy,
+                    order = currentState.order
                 )
                 Log.d("LessonsListViewModel", "Loaded ${lessons.size} lessons")
 
-                _uiState.value = _uiState.value.copy(
+                // Get total count for pagination
+                val totalCount = repository.getTotalLessonsCount(categoryId)
+                val totalPages = kotlin.math.ceil(totalCount.toDouble() / currentState.postsPerPage).toInt()
+
+                _uiState.value = currentState.copy(
                     lessons = lessons,
                     isLoading = false,
-                    hasMorePages = lessons.size >= 20 // If we got 20 items, there might be more
+                    currentPage = page,
+                    totalPages = totalPages,
+                    totalPosts = totalCount
                 )
             } catch (e: Exception) {
                 Log.e("LessonsListViewModel", "Error loading lessons: ${e.message}", e)
@@ -63,52 +69,52 @@ class LessonsListViewModel(private val repository: LessonRepository) : ViewModel
         }
     }
 
-    fun loadNextPage() {
+    fun goToPage(page: Int) {
         val categoryId = currentCategoryId ?: return
         val currentState = _uiState.value
 
-        if (currentState.isLoadingMore || !currentState.hasMorePages) return
+        if (page < 1 || page > currentState.totalPages || page == currentState.currentPage) return
 
-        viewModelScope.launch {
-            try {
-                Log.d("LessonsListViewModel", "Loading page ${currentState.currentPage + 1}")
-                _uiState.value = currentState.copy(isLoadingMore = true)
+        loadLessonsForCategory(categoryId, page)
+    }
 
-                val nextPage = currentState.currentPage + 1
-                val newLessons = repository.getLessonsByCategory(
-                    categoryId = categoryId,
-                    page = nextPage,
-                    orderBy = currentState.orderBy,
-                    order = currentState.order
-                )
-                Log.d("LessonsListViewModel", "Loaded ${newLessons.size} more lessons")
-
-                _uiState.value = currentState.copy(
-                    lessons = currentState.lessons + newLessons,
-                    currentPage = nextPage,
-                    hasMorePages = newLessons.size >= 20,
-                    isLoadingMore = false
-                )
-            } catch (e: Exception) {
-                Log.e("LessonsListViewModel", "Error loading more lessons: ${e.message}", e)
-                _uiState.value = currentState.copy(
-                    error = e.message ?: "Failed to load more lessons",
-                    isLoadingMore = false
-                )
-            }
+    fun goToNextPage() {
+        val currentState = _uiState.value
+        if (currentState.currentPage < currentState.totalPages) {
+            goToPage(currentState.currentPage + 1)
         }
+    }
+
+    fun goToPreviousPage() {
+        val currentState = _uiState.value
+        if (currentState.currentPage > 1) {
+            goToPage(currentState.currentPage - 1)
+        }
+    }
+
+    fun changePostsPerPage(postsPerPage: Int) {
+        val categoryId = currentCategoryId ?: return
+
+        _uiState.value = _uiState.value.copy(
+            postsPerPage = postsPerPage,
+            currentPage = 1 // Reset to first page when changing posts per page
+        )
+
+        // Reload with new posts per page
+        loadLessonsForCategory(categoryId, 1)
     }
 
     fun changeOrder(orderBy: String = "date", order: String = "desc") {
         val categoryId = currentCategoryId ?: return
+        val currentPage = _uiState.value.currentPage
 
         _uiState.value = _uiState.value.copy(
             orderBy = orderBy,
             order = order
         )
 
-        // Reload with new order
-        loadLessonsForCategory(categoryId)
+        // Reload current page with new order
+        loadLessonsForCategory(categoryId, currentPage)
     }
 
     fun retryLoading() {

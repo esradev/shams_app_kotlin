@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,14 +19,19 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -90,26 +95,12 @@ fun LessonsListScreen(
     // Filter state
     var showFilterDialog by remember { mutableStateOf(false) }
 
+    // Posts per page selector state
+    var showPostsPerPageDropdown by remember { mutableStateOf(false) }
+
     // Pagination state
     val listState = rememberLazyListState()
 
-    // Detect when user scrolls to near the end
-    val shouldLoadMore by remember {
-        derivedStateOf {
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-            lastVisibleItem != null &&
-            lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 3 &&
-            lessonUiState.hasMorePages &&
-            !lessonUiState.isLoadingMore
-        }
-    }
-
-    // Load more when scrolled to bottom
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
-            lessonViewModel.loadNextPage()
-        }
-    }
 
     // Get the current category
     val currentCategory = categoryUiState.categories.find { it.id == categoryId }
@@ -134,7 +125,7 @@ fun LessonsListScreen(
     }
 
     LaunchedEffect(categoryId) {
-        lessonViewModel.loadLessonsForCategory(categoryId)
+        lessonViewModel.loadLessonsForCategory(categoryId, 1)
     }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -165,11 +156,16 @@ fun LessonsListScreen(
                 }
 
                 else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        state = listState
-                    ) {
+                    // Main content with sticky bottom pagination
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // Main scrollable content
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            state = listState
+                        ) {
                         // Category header section
                         item {
                             Column(
@@ -300,15 +296,60 @@ fun LessonsListScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    // Filter button
-                                    IconButton(
-                                        onClick = { showFilterDialog = true }
+                                    // Left side: Posts per page and Filter
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.FilterList,
-                                            contentDescription = "فیلتر کردن",
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                                        // Filter button
+                                        IconButton(
+                                            onClick = { showFilterDialog = true }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.FilterList,
+                                                contentDescription = "فیلتر کردن",
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+
+                                        // Posts per page selector
+                                        Box {
+                                            OutlinedButton(
+                                                onClick = { showPostsPerPageDropdown = true },
+                                                modifier = Modifier.height(36.dp)
+                                            ) {
+                                                Text(
+                                                    text = "${lessonUiState.postsPerPage}",
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Icon(
+                                                    imageVector = Icons.Default.ArrowDropDown,
+                                                    contentDescription = "انتخاب تعداد",
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+
+                                            DropdownMenu(
+                                                expanded = showPostsPerPageDropdown,
+                                                onDismissRequest = { showPostsPerPageDropdown = false }
+                                            ) {
+                                                listOf(10, 20, 30, 40, 50, 75, 100).forEach { count ->
+                                                    DropdownMenuItem(
+                                                        text = {
+                                                            Text(
+                                                                text = "$count درس در صفحه",
+                                                                style = MaterialTheme.typography.bodyMedium
+                                                            )
+                                                        },
+                                                        onClick = {
+                                                            lessonViewModel.changePostsPerPage(count)
+                                                            showPostsPerPageDropdown = false
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
 
                                     Text(
@@ -354,23 +395,113 @@ fun LessonsListScreen(
                             }
                         }
 
-                        // Loading more indicator
-                        if (lessonUiState.isLoadingMore) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
-                            }
-                        }
-
-                        // Bottom spacing
+                        // Bottom spacing for sticky pagination
                         item {
                             Spacer(modifier = Modifier.height(24.dp))
+                        }
+                    }
+
+                    // Modern Sticky bottom pagination
+                    if (lessonUiState.lessons.isNotEmpty() && lessonUiState.totalPages > 1) {
+                        val canGoBack = lessonUiState.currentPage > 1
+                        val canGoForward = lessonUiState.currentPage < lessonUiState.totalPages
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Next button (left side in RTL)
+                                OutlinedButton(
+                                    onClick = { lessonViewModel.goToNextPage() },
+                                    enabled = canGoForward,
+                                    modifier = Modifier
+                                        .background(
+                                            color = if (canGoForward) {
+                                                if (MaterialTheme.colorScheme.surface == Color.White) {
+                                                    Emerald700
+                                                } else {
+                                                    Emerald400
+                                                }
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceVariant
+                                            },
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .height(40.dp),
+                                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                        containerColor = Color.Transparent,
+                                        contentColor = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    border = null
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ChevronLeft,
+                                        contentDescription = "صفحه بعد",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "بعدی",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                                        color = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                // Page info
+                                Text(
+                                    text = "${lessonUiState.currentPage} از ${lessonUiState.totalPages}",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+
+                                // Previous button (right side in RTL)
+                                OutlinedButton(
+                                    onClick = { lessonViewModel.goToPreviousPage() },
+                                    enabled = canGoBack,
+                                    modifier = Modifier
+                                        .background(
+                                            color = if (canGoBack) {
+                                                if (MaterialTheme.colorScheme.surface == Color.White) {
+                                                    Emerald700
+                                                } else {
+                                                    Emerald400
+                                                }
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceVariant
+                                            },
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .height(40.dp),
+                                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                        containerColor = Color.Transparent,
+                                        contentColor = if (canGoBack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    border = null
+                                ) {
+                                    Text(
+                                        text = "قبلی",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                                        color = if (canGoBack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.ChevronRight,
+                                        contentDescription = "صفحه قبل",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = if (canGoBack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -378,104 +509,105 @@ fun LessonsListScreen(
         }
     }
 
-    // Filter Dialog
-    if (showFilterDialog) {
-        Dialog(onDismissRequest = { showFilterDialog = false }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp)
+        // Filter Dialog
+        if (showFilterDialog) {
+            Dialog(onDismissRequest = { showFilterDialog = false }) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text(
-                        text = "مرتب سازی بر اساس",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Right,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Column(
+                        modifier = Modifier.padding(24.dp)
+                    ) {
+                        Text(
+                            text = "مرتب سازی بر اساس",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Right,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    // Date options
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .selectable(
+                        // Date options
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = (lessonUiState.orderBy == "date" && lessonUiState.order == "desc"),
+                                        onClick = {
+                                            lessonViewModel.changeOrder("date", "desc")
+                                            showFilterDialog = false
+                                        }
+                                    )
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Text(
+                                    text = "جدیدترین",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Right
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                RadioButton(
                                     selected = (lessonUiState.orderBy == "date" && lessonUiState.order == "desc"),
                                     onClick = {
                                         lessonViewModel.changeOrder("date", "desc")
                                         showFilterDialog = false
                                     }
                                 )
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Text(
-                                text = "جدیدترین",
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Right
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            RadioButton(
-                                selected = (lessonUiState.orderBy == "date" && lessonUiState.order == "desc"),
-                                onClick = {
-                                    lessonViewModel.changeOrder("date", "desc")
-                                    showFilterDialog = false
-                                }
-                            )
-                        }
+                            }
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .selectable(
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = (lessonUiState.orderBy == "date" && lessonUiState.order == "asc"),
+                                        onClick = {
+                                            lessonViewModel.changeOrder("date", "asc")
+                                            showFilterDialog = false
+                                        }
+                                    )
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Text(
+                                    text = "قدیمی‌ترین",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Right
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                RadioButton(
                                     selected = (lessonUiState.orderBy == "date" && lessonUiState.order == "asc"),
                                     onClick = {
                                         lessonViewModel.changeOrder("date", "asc")
                                         showFilterDialog = false
                                     }
                                 )
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Text(
-                                text = "قدیمی‌ترین",
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Right
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            RadioButton(
-                                selected = (lessonUiState.orderBy == "date" && lessonUiState.order == "asc"),
-                                onClick = {
-                                    lessonViewModel.changeOrder("date", "asc")
-                                    showFilterDialog = false
-                                }
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(
-                            onClick = { showFilterDialog = false }
-                        ) {
-                            Text(
-                                text = "انصراف",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            TextButton(
+                                onClick = { showFilterDialog = false }
+                            ) {
+                                Text(
+                                    text = "انصراف",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }

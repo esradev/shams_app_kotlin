@@ -42,11 +42,8 @@ class LessonRepository(private val lessonDao: LessonDao) {
                     )
                 }
 
-                // 3️⃣ Save to local DB (replace existing data for this page)
-                if (page == 1) {
-                    // Clear existing lessons for this category when loading first page
-                    lessonDao.deleteLessonsByCategory(categoryId)
-                }
+                // 3️⃣ Save to local DB
+                // For pagination, we'll cache all pages but replace existing lessons with same IDs
                 lessonDao.insertLessons(entities)
                 Log.d("LessonRepository", "Saved ${entities.size} lessons to database")
 
@@ -159,6 +156,39 @@ class LessonRepository(private val lessonDao: LessonDao) {
                 playCount = 0
             )
         )
+    }
+
+    // 🔹 Get total lessons count for pagination
+    suspend fun getTotalLessonsCount(categoryId: Int): Int {
+        return try {
+            // First try to get from database
+            val dbCount = lessonDao.getLessonCountByCategory(categoryId)
+
+            if (dbCount > 0) {
+                // If we have data in database, use it
+                dbCount
+            } else {
+                // Try to estimate from API by making a call with a large per_page
+                try {
+                    val apiLessons = api.getPostsByCategory(categoryId, 100, 1, "date", "desc")
+                    val estimatedTotal = if (apiLessons.size >= 100) {
+                        // If we got 100 results, there might be more, estimate 150
+                        150
+                    } else {
+                        // Use the actual count
+                        apiLessons.size
+                    }
+                    estimatedTotal
+                } catch (e: Exception) {
+                    Log.e("LessonRepository", "Failed to get total count from API: ${e.message}")
+                    // Fallback to a reasonable default
+                    30
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("LessonRepository", "Failed to get total count: ${e.message}")
+            30
+        }
     }
 
     // 🔹 Fetch single lesson by ID
