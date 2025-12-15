@@ -239,6 +239,28 @@ fun MiniAudioPlayer(
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Action buttons row
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        // Close button
+                        IconButton(
+                            onClick = { onCloseClick() },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "بستن پخش‌کننده",
+                                modifier = Modifier.size(18.dp),
+                                tint = Gray700.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
                 }
             }
         }

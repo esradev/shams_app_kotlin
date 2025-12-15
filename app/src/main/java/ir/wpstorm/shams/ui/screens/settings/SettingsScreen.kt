@@ -87,34 +87,34 @@ fun SettingsScreen(
             }
 
             // Settings Section
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        SettingSwitch(
-                            title = "حالت آفلاین",
-                            description = "فقط از دروس دانلود شده استفاده کن",
-                            checked = uiState.offlineMode,
-                            onCheckedChange = viewModel::setOfflineMode
-                        )
+            // item {
+            //     Card(
+            //         modifier = Modifier.fillMaxWidth(),
+            //         colors = CardDefaults.cardColors(
+            //             containerColor = MaterialTheme.colorScheme.surface
+            //         )
+            //     ) {
+            //         Column(
+            //             modifier = Modifier.padding(16.dp)
+            //         ) {
+            //             SettingSwitch(
+            //                 title = "حالت آفلاین",
+            //                 description = "فقط از دروس دانلود شده استفاده کن",
+            //                 checked = uiState.offlineMode,
+            //                 onCheckedChange = viewModel::setOfflineMode
+            //             )
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+            //             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-                        SettingSwitch(
-                            title = "دانلود خودکار صوت",
-                            description = "دانلود خودکار صوت درس‌ها",
-                            checked = uiState.autoDownload,
-                            onCheckedChange = viewModel::setAutoDownload
-                        )
-                    }
-                }
-            }
+            //             SettingSwitch(
+            //                 title = "دانلود خودکار صوت",
+            //                 description = "دانلود خودکار صوت درس‌ها",
+            //                 checked = uiState.autoDownload,
+            //                 onCheckedChange = viewModel::setAutoDownload
+            //             )
+            //         }
+            //     }
+            // }
 
             // Downloaded Audio Files Section
             item {
