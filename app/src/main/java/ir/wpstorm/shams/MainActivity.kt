@@ -9,12 +9,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import ir.wpstorm.shams.ui.components.MainScaffold
 import ir.wpstorm.shams.ui.navigation.NavGraph
 import ir.wpstorm.shams.ui.theme.ShamsAlMaarifTheme
 import ir.wpstorm.shams.ui.theme.ThemeManager
 import ir.wpstorm.shams.ui.theme.rememberThemeState
+import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
+import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,13 +34,21 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
 
+                    // Create single shared ViewModel instance at activity level
+                    val application = context.applicationContext as ShamsApplication
+                    val globalAudioPlayerViewModel: GlobalAudioPlayerViewModel = viewModel(
+                        factory = GlobalAudioPlayerViewModelFactory(application.globalAudioPlayer)
+                    )
+
                     MainScaffold(
                         navController = navController,
-                        themeState = themeState
+                        themeState = themeState,
+                        globalAudioPlayerViewModel = globalAudioPlayerViewModel
                     ) { paddingValues ->
                         NavGraph(
                             navController = navController,
-                            paddingValues = paddingValues
+                            paddingValues = paddingValues,
+                            globalAudioPlayerViewModel = globalAudioPlayerViewModel
                         )
                     }
                 }

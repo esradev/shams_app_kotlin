@@ -55,6 +55,7 @@ import java.io.File
 fun LessonScreen(
     lessonId: Int,
     searchQuery: String = "",
+    globalAudioPlayerViewModel: GlobalAudioPlayerViewModel,
     @Suppress("UNUSED_PARAMETER") onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -70,9 +71,6 @@ fun LessonScreen(
 
     // Use global Audio Player for app-wide audio management (same instance as mini player)
     val globalAudioPlayer = application.globalAudioPlayer
-    val globalAudioPlayerViewModel: GlobalAudioPlayerViewModel = viewModel(
-        factory = GlobalAudioPlayerViewModelFactory(globalAudioPlayer)
-    )
     var localAudioPath by remember { mutableStateOf<String?>(null) }
     var isDownloading by remember { mutableStateOf(false) }
     var downloadProgress by remember { mutableStateOf(0f) }
@@ -103,6 +101,28 @@ fun LessonScreen(
         uiState.lesson?.audioUrl?.let { url ->
             val path = localAudioPath ?: url
             globalAudioPlayer.prepare(path)
+
+            // Set current audio in global state (for mini player)
+            val currentAudio = if (isDownloaded && localAudioPath != null) {
+                downloadedAudioRepository.getDownloadedAudioByLessonId(lessonId)
+            } else {
+                // Create a temporary entity for streaming audio
+                uiState.lesson?.let { lesson ->
+                    lesson.audioUrl?.let { audioUrl ->
+                        DownloadedAudioEntity(
+                            id = "streaming_$lessonId",
+                            lessonId = lessonId,
+                            title = lesson.title,
+                            filePath = audioUrl,
+                            fileSize = 0L,
+                            downloadDate = System.currentTimeMillis()
+                        )
+                    }
+                }
+            }
+            currentAudio?.let { audio ->
+                globalAudioPlayerViewModel.setCurrentAudio(audio)
+            }
         }
     }
 

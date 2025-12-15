@@ -18,13 +18,15 @@ import ir.wpstorm.shams.ui.screens.lessons.LessonScreen
 import ir.wpstorm.shams.ui.screens.lessons.LessonsListScreen
 import ir.wpstorm.shams.ui.screens.search.SearchScreen
 import ir.wpstorm.shams.ui.screens.settings.SettingsScreen
+import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
 import ir.wpstorm.shams.viewmodel.SettingsViewModel
 import ir.wpstorm.shams.viewmodel.SettingsViewModelFactory
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    globalAudioPlayerViewModel: GlobalAudioPlayerViewModel
 ) {
     NavHost(
         navController = navController,
@@ -77,6 +79,7 @@ fun NavGraph(
             LessonScreen(
                 lessonId = lessonId,
                 searchQuery = query,
+                globalAudioPlayerViewModel = globalAudioPlayerViewModel,
                 onBack = {
                     navController.popBackStack()
                 }
