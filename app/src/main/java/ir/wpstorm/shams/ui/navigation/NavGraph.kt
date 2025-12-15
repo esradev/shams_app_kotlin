@@ -68,13 +68,21 @@ fun NavGraph(
 
         // Single lesson screen
         composable(
-            route = "lesson/{lessonId}",
-            arguments = listOf(navArgument("lessonId") { type = NavType.IntType })
+            route = "lesson/{lessonId}?query={query}",
+            arguments = listOf(
+                navArgument("lessonId") { type = NavType.IntType },
+                navArgument("query") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
         ) { entry ->
             val lessonId = entry.arguments?.getInt("lessonId") ?: 0
+            val query = entry.arguments?.getString("query") ?: ""
 
             LessonScreen(
                 lessonId = lessonId,
+                searchQuery = query,
                 onBack = {
                     navController.popBackStack()
                 }
@@ -84,11 +92,11 @@ fun NavGraph(
         // Search screen
         composable("search") {
             SearchScreen(
+                onLessonClick = { lessonId, query ->
+                    navController.navigate("lesson/$lessonId?query=$query")
+                },
                 onBack = {
                     navController.popBackStack()
-                },
-                onLessonClick = { lessonId ->
-                    navController.navigate("lesson/$lessonId")
                 }
             )
         }

@@ -42,6 +42,8 @@ import ir.wpstorm.shams.ShamsApplication
 import ir.wpstorm.shams.ui.components.AudioPlayerCompose
 import ir.wpstorm.shams.ui.components.GlobalError
 import ir.wpstorm.shams.ui.components.GlobalLoading
+import ir.wpstorm.shams.ui.components.HighlightableHtmlRenderer
+import ir.wpstorm.shams.ui.components.SearchNavigationBar
 import ir.wpstorm.shams.ui.theme.Gray50
 import ir.wpstorm.shams.ui.theme.Gray700
 import ir.wpstorm.shams.ui.theme.Gray900
@@ -56,6 +58,7 @@ import java.io.File
 @Composable
 fun LessonScreen(
     lessonId: Int,
+    searchQuery: String = "",
     @Suppress("UNUSED_PARAMETER") onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -78,6 +81,10 @@ fun LessonScreen(
     var isDownloading by remember { mutableStateOf(false) }
     var downloadProgress by remember { mutableStateOf(0f) }
     var isDownloaded by remember { mutableStateOf(false) }
+
+    // Search navigation state
+    var totalMatches by remember { mutableStateOf(0) }
+    var currentMatchIndex by remember { mutableStateOf(0) }
 
     LaunchedEffect(lessonId) {
         viewModel.loadLesson(lessonId)
@@ -115,112 +122,133 @@ fun LessonScreen(
                     }
                 ),
             bottomBar = {
-                // Audio Player at bottom if lesson has audio
-                if (uiState.lesson?.audioUrl != null) {
-                    AudioPlayerCompose(
-                        audioPlayer = globalAudioPlayer,
-                        postTitle = uiState.lesson?.title ?: "",
-                        onPlayStart = { _ ->
-                            // When audio starts playing, update global player state for mini player display
-                            scope.launch {
-                                // Small delay to ensure audio player state is updated
-                                kotlinx.coroutines.delay(50)
-                                val currentAudio = if (isDownloaded && localAudioPath != null) {
-                                    downloadedAudioRepository.getDownloadedAudioByLessonId(lessonId)
-                                } else {
-                                    // Create a temporary entity for streaming audio
+                Column {
+                    // Show search navigation if there's a search query and matches
+                    if (searchQuery.isNotBlank() && totalMatches > 0) {
+                        SearchNavigationBar(
+                            searchQuery = searchQuery,
+                            currentMatchIndex = currentMatchIndex,
+                            totalMatches = totalMatches,
+                            onPreviousMatch = {
+                                if (currentMatchIndex > 0) {
+                                    currentMatchIndex--
+                                }
+                            },
+                            onNextMatch = {
+                                if (currentMatchIndex < totalMatches - 1) {
+                                    currentMatchIndex++
+                                }
+                            }
+                        )
+                    }
+
+                    // Audio Player at bottom if lesson has audio
+                    if (uiState.lesson?.audioUrl != null) {
+                        AudioPlayerCompose(
+                            audioPlayer = globalAudioPlayer,
+                            postTitle = uiState.lesson?.title ?: "",
+                            onPlayStart = { _ ->
+                                // When audio starts playing, update global player state for mini player display
+                                scope.launch {
+                                    // Small delay to ensure audio player state is updated
+                                    kotlinx.coroutines.delay(50)
+                                    val currentAudio = if (isDownloaded && localAudioPath != null) {
+                                        downloadedAudioRepository.getDownloadedAudioByLessonId(lessonId)
+                                    } else {
+                                        // Create a temporary entity for streaming audio
+                                        uiState.lesson?.let { lesson ->
+                                            lesson.audioUrl?.let { url ->
+                                                DownloadedAudioEntity(
+                                                    id = "streaming_$lessonId",
+                                                    lessonId = lessonId,
+                                                    title = lesson.title,
+                                                    filePath = url,
+                                                    fileSize = 0L,
+                                                    downloadDate = System.currentTimeMillis()
+                                                )
+                                            }
+                                        }
+                                    }
+                                    currentAudio?.let { audio ->
+                                        globalAudioPlayerViewModel.setCurrentAudio(audio)
+                                    }
+                                }
+                            },
+                            onDownload = {
+                                scope.launch {
                                     uiState.lesson?.let { lesson ->
                                         lesson.audioUrl?.let { url ->
-                                            DownloadedAudioEntity(
-                                                id = "streaming_$lessonId",
-                                                lessonId = lessonId,
-                                                title = lesson.title,
-                                                filePath = url,
-                                                fileSize = 0L,
-                                                downloadDate = System.currentTimeMillis()
+                                            isDownloading = true
+                                            downloadProgress = 0f
+                                            val fileName = "lesson_${lessonId}.mp3"
+                                            val path = DownloadHelper.downloadFile(
+                                                context = context,
+                                                fileUrl = url,
+                                                fileName = fileName,
+                                                onProgress = { progress ->
+                                                    downloadProgress = progress
+                                                }
                                             )
+                                            isDownloading = false
+                                            if (path != null) {
+                                                val file = File(path)
+                                                val fileSize = if (file.exists()) file.length() else 0L
+
+                                                // Save to database
+                                                val downloadedAudio = DownloadedAudioEntity(
+                                                    id = path,
+                                                    lessonId = lessonId,
+                                                    title = lesson.title,
+                                                    filePath = path,
+                                                    fileSize = fileSize,
+                                                    downloadDate = System.currentTimeMillis()
+                                                )
+                                                downloadedAudioRepository.insertDownloadedAudio(downloadedAudio)
+
+                                                localAudioPath = path
+                                                isDownloaded = true
+                                                globalAudioPlayer.prepare(path) // Prepare with local file
+                                                Toast.makeText(context, "دانلود کامل شد!", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(context, "خطا در دانلود", Toast.LENGTH_SHORT).show()
+                                            }
                                         }
                                     }
                                 }
-                                currentAudio?.let { audio ->
-                                    globalAudioPlayerViewModel.setCurrentAudio(audio)
-                                }
-                            }
-                        },
-                        onDownload = {
-                            scope.launch {
-                                uiState.lesson?.let { lesson ->
-                                    lesson.audioUrl?.let { url ->
-                                        isDownloading = true
-                                        downloadProgress = 0f
-                                        val fileName = "lesson_${lessonId}.mp3"
-                                        val path = DownloadHelper.downloadFile(
-                                            context = context,
-                                            fileUrl = url,
-                                            fileName = fileName,
-                                            onProgress = { progress ->
-                                                downloadProgress = progress
-                                            }
-                                        )
-                                        isDownloading = false
-                                        if (path != null) {
+                            },
+                            onDelete = {
+                                scope.launch {
+                                    localAudioPath?.let { path ->
+                                        try {
                                             val file = File(path)
-                                            val fileSize = if (file.exists()) file.length() else 0L
+                                            if (file.exists() && file.delete()) {
+                                                // Remove from database
+                                                downloadedAudioRepository.getDownloadedAudioByLessonId(lessonId)?.let { audio ->
+                                                    downloadedAudioRepository.deleteDownloadedAudio(audio)
+                                                }
 
-                                            // Save to database
-                                            val downloadedAudio = DownloadedAudioEntity(
-                                                id = path,
-                                                lessonId = lessonId,
-                                                title = lesson.title,
-                                                filePath = path,
-                                                fileSize = fileSize,
-                                                downloadDate = System.currentTimeMillis()
-                                            )
-                                            downloadedAudioRepository.insertDownloadedAudio(downloadedAudio)
-
-                                            localAudioPath = path
-                                            isDownloaded = true
-                                            globalAudioPlayer.prepare(path) // Prepare with local file
-                                            Toast.makeText(context, "دانلود کامل شد!", Toast.LENGTH_SHORT).show()
-                                        } else {
-                                            Toast.makeText(context, "خطا در دانلود", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        onDelete = {
-                            scope.launch {
-                                localAudioPath?.let { path ->
-                                    try {
-                                        val file = File(path)
-                                        if (file.exists() && file.delete()) {
-                                            // Remove from database
-                                            downloadedAudioRepository.getDownloadedAudioByLessonId(lessonId)?.let { audio ->
-                                                downloadedAudioRepository.deleteDownloadedAudio(audio)
+                                                localAudioPath = null
+                                                isDownloaded = false
+                                                // Re-prepare audio with original URL
+                                                uiState.lesson?.audioUrl?.let { url ->
+                                                    globalAudioPlayer.prepare(url)
+                                                }
+                                                Toast.makeText(context, "فایل حذف شد", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(context, "خطا در حذف فایل", Toast.LENGTH_SHORT).show()
                                             }
-
-                                            localAudioPath = null
-                                            isDownloaded = false
-                                            // Re-prepare audio with original URL
-                                            uiState.lesson?.audioUrl?.let { url ->
-                                                globalAudioPlayer.prepare(url)
-                                            }
-                                            Toast.makeText(context, "فایل حذف شد", Toast.LENGTH_SHORT).show()
-                                        } else {
+                                        } catch (_: Exception) {
+                                            @Suppress("UNUSED_PARAMETER")
                                             Toast.makeText(context, "خطا در حذف فایل", Toast.LENGTH_SHORT).show()
                                         }
-                                    } catch (_: Exception) {
-                                        @Suppress("UNUSED_PARAMETER")
-                                        Toast.makeText(context, "خطا در حذف فایل", Toast.LENGTH_SHORT).show()
                                     }
                                 }
-                            }
-                        },
-                        isDownloading = isDownloading,
-                        downloadProgress = downloadProgress,
-                        isDownloaded = isDownloaded
-                    )
+                            },
+                            isDownloading = isDownloading,
+                            downloadProgress = downloadProgress,
+                            isDownloaded = isDownloaded
+                        )
+                    }
                 }
             }
         ) { paddingValues ->
@@ -298,16 +326,21 @@ fun LessonScreen(
                                         .padding(bottom = 16.dp)
                                 )
 
-                                // HTML content renderer
-                                HtmlRenderer(
+                                // HTML content renderer with highlighting
+                                HighlightableHtmlRenderer(
                                     html = lesson.content,
+                                    searchQuery = searchQuery,
+                                    currentMatchIndex = currentMatchIndex,
+                                    onMatchesFound = { matches ->
+                                        totalMatches = matches
+                                        if (matches > 0 && currentMatchIndex >= matches) {
+                                            currentMatchIndex = 0
+                                        }
+                                    },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
-
-                        // Bottom spacing for audio player
-                        Spacer(modifier = Modifier.height(if (uiState.lesson?.audioUrl != null) 120.dp else 24.dp))
                     }
                 }
 

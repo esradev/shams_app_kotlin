@@ -12,6 +12,7 @@ val Pink40 = Color(0xFF7D5260)
 
 // Emerald colors for the course cards
 val Emerald50 = Color(0xFFECFDF5)
+val Emerald100 = Color(0xFFD1FAE5)
 val Emerald700 = Color(0xFF047857)
 val Emerald400 = Color(0xFF34D399)
 val Emerald900 = Color(0xFF064E3B)

@@ -19,7 +19,8 @@ data class SearchUiState(
 
 data class SearchResultItem(
     val id: Int,
-    val title: String
+    val title: String,
+    val excerpt: String? = null
 )
 
 class SearchViewModel(private val repository: LessonRepository) : ViewModel() {
@@ -59,7 +60,8 @@ class SearchViewModel(private val repository: LessonRepository) : ViewModel() {
             val results = lessons.map { lesson ->
                 SearchResultItem(
                     id = lesson.id,
-                    title = lesson.title
+                    title = lesson.title,
+                    excerpt = lesson.content.replace(Regex("<[^>]*>"), "").trim().take(150)
                 )
             }
             _uiState.value = _uiState.value.copy(

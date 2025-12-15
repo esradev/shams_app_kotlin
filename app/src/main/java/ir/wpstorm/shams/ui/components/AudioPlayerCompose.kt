@@ -207,7 +207,7 @@ fun AudioPlayerCompose(
                             .padding(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.FastRewind,
+                            imageVector = Icons.Default.FastForward,
                             contentDescription = "30 ثانیه عقب",
                             modifier = Modifier.size(24.dp),
                             tint = Gray700
@@ -260,7 +260,7 @@ fun AudioPlayerCompose(
                             .padding(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.FastForward,
+                            imageVector = Icons.Default.FastRewind,
                             contentDescription = "30 ثانیه جلو",
                             modifier = Modifier.size(24.dp),
                             tint = Gray700
