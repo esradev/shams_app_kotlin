@@ -1,7 +1,10 @@
 package ir.wpstorm.shams.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Pause
@@ -20,14 +24,20 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -54,83 +64,101 @@ fun MiniAudioPlayer(
     // Only show if there's an active audio
     if (uiState.currentAudio == null) return
 
+    // Animated progress for smooth transitions
+    val animatedProgress = animateFloatAsState(
+        targetValue = if (uiState.duration > 0) {
+            (uiState.currentPosition.toFloat() / uiState.duration.toFloat()).coerceIn(0f, 1f)
+        } else {
+            0f
+        },
+        animationSpec = tween(durationMillis = 100),
+        label = "progress_animation"
+    )
+
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        Card(
+        Surface(
             modifier = modifier
                 .fillMaxWidth()
-                .clickable { onPlayerClick() },
-            colors = CardDefaults.cardColors(
-                containerColor = if (MaterialTheme.colorScheme.surface == Color.White) {
-                    Gray50
-                } else {
-                    Gray900
-                }
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 8.dp
-            )
+                .shadow(
+                    elevation = 4.dp,
+                    spotColor = Color.Black.copy(alpha = 0.1f),
+                    ambientColor = Color.Black.copy(alpha = 0.05f)
+                )
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(color = Emerald700.copy(alpha = 0.1f)),
+                    onClick = { onPlayerClick() }
+                ),
+            color = if (MaterialTheme.colorScheme.surface == Color.White) {
+                Color.White
+            } else {
+                Gray900
+            }
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Progress bar
-                if (uiState.duration > 0) {
-                    val progress = if (uiState.duration > 0) {
-                        (uiState.currentPosition.toFloat() / uiState.duration.toFloat()).coerceIn(0f, 1f)
+                // Thin progress bar at top (Telegram style)
+                LinearProgressIndicator(
+                    progress = animatedProgress.value,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(2.dp),
+                    color = Emerald700,
+                    trackColor = if (MaterialTheme.colorScheme.surface == Color.White) {
+                        Gray50
                     } else {
-                        0f
+                        Gray700.copy(alpha = 0.2f)
                     }
-                    LinearProgressIndicator(
-                        progress = progress,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(3.dp),
-                        color = Emerald700,
-                        trackColor = Emerald400.copy(alpha = 0.3f)
-                    )
-                }
+                )
 
-                // Mini player content
+                // Main player content
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Play/Pause button
-                    Box(
+                    // Play/Pause button - Telegram style floating action button
+                    Surface(
                         modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(
-                                color = if (uiState.isLoaded) Emerald700 else Gray700.copy(alpha = 0.3f)
-                            )
-                            .clickable(enabled = uiState.isLoaded) {
-                                onPlayPauseClick()
-                            },
-                        contentAlignment = Alignment.Center
+                            .size(44.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = ripple(bounded = false, radius = 24.dp),
+                                enabled = uiState.isLoaded,
+                                onClick = { onPlayPauseClick() }
+                            ),
+                        shape = CircleShape,
+                        color = if (uiState.isLoaded) Emerald700 else Gray700.copy(alpha = 0.3f),
+                        shadowElevation = 2.dp
                     ) {
-                        Icon(
-                            imageVector = if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = if (uiState.isPlaying) "توقف" else "پخش",
-                            modifier = Modifier.size(24.dp),
-                            tint = Color.White
-                        )
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = if (uiState.isPlaying) "توقف" else "پخش",
+                                modifier = Modifier.size(22.dp),
+                                tint = Color.White
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    // Audio title and info
+                    // Audio title and time info
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         Text(
                             text = uiState.currentAudio?.title ?: "در حال پخش...",
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp,
+                                lineHeight = 18.sp
                             ),
                             color = MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Right,
@@ -139,38 +167,35 @@ fun MiniAudioPlayer(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Time display
+                        // Time display - smaller and more subtle
                         val currentTime = formatTime(uiState.currentPosition)
                         val totalTime = formatTime(uiState.duration)
                         Text(
                             text = "$currentTime / $totalTime",
                             style = MaterialTheme.typography.bodySmall.copy(
-                                fontSize = 12.sp
+                                fontSize = 12.sp,
+                                lineHeight = 16.sp
                             ),
-                            color = Gray700,
+                            color = Gray700.copy(alpha = 0.8f),
                             textAlign = TextAlign.Right,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .alpha(0.7f)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                    // Close button
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(Color.Transparent)
-                            .clickable { onCloseClick() },
-                        contentAlignment = Alignment.Center
+                    // Close button - minimal style
+                    IconButton(
+                        onClick = { onCloseClick() },
+                        modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "بستن پخش‌کننده",
-                            modifier = Modifier.size(20.dp),
-                            tint = Gray700
+                            modifier = Modifier.size(18.dp),
+                            tint = Gray700.copy(alpha = 0.6f)
                         )
                     }
                 }
