@@ -23,10 +23,13 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
@@ -53,12 +56,14 @@ import ir.wpstorm.shams.ui.theme.Gray700
 import ir.wpstorm.shams.ui.theme.Gray900
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerUiState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MiniAudioPlayer(
     uiState: GlobalAudioPlayerUiState,
     onPlayPauseClick: () -> Unit,
     onCloseClick: () -> Unit,
     onPlayerClick: () -> Unit,
+    onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Only show if there's an active audio
@@ -98,18 +103,30 @@ fun MiniAudioPlayer(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Thin progress bar at top (Telegram style)
-                LinearProgressIndicator(
-                    progress = animatedProgress.value,
+                // Interactive progress slider at top (Telegram style)
+                Slider(
+                    value = if (uiState.duration > 0) uiState.currentPosition.toFloat() else 0f,
+                    onValueChange = { newValue ->
+                        onSeek(newValue.toLong())
+                    },
+                    valueRange = 0f..(if (uiState.duration > 0) uiState.duration.toFloat() else 1f),
+                    enabled = uiState.duration > 0,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(2.dp),
-                    color = Emerald700,
-                    trackColor = if (MaterialTheme.colorScheme.surface == Color.White) {
-                        Gray50
-                    } else {
-                        Gray700.copy(alpha = 0.2f)
-                    }
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.Transparent,
+                        activeTrackColor = Emerald700,
+                        inactiveTrackColor = if (MaterialTheme.colorScheme.surface == Color.White) {
+                            Gray50
+                        } else {
+                            Gray700.copy(alpha = 0.2f)
+                        },
+                        disabledThumbColor = Color.Transparent,
+                        disabledActiveTrackColor = Emerald700.copy(alpha = 0.5f),
+                        disabledInactiveTrackColor = Gray700.copy(alpha = 0.2f)
+                    ),
+                    thumb = { /* Empty thumb for minimal look */ }
                 )
 
                 // Main player content

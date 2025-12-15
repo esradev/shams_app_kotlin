@@ -83,6 +83,9 @@ fun MainScaffold(
                         audioPlayerUiState.currentAudio?.let { audio ->
                             navController.navigate("lesson/${audio.lessonId}")
                         }
+                    },
+                    onSeek = { position ->
+                        globalAudioPlayerViewModel.seekTo(position)
                     }
                 )
             }
