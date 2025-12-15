@@ -43,7 +43,10 @@ class MainActivity : ComponentActivity() {
                     MainScaffold(
                         navController = navController,
                         themeState = themeState,
-                        globalAudioPlayerViewModel = globalAudioPlayerViewModel
+                        globalAudioPlayerViewModel = globalAudioPlayerViewModel,
+                        onNavigateToLesson = { lessonId ->
+                            navController.navigate("lesson/$lessonId")
+                        }
                     ) { paddingValues ->
                         NavGraph(
                             navController = navController,

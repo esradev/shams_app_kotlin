@@ -100,16 +100,6 @@ fun AppHeader(
                 }
 
             }
-
-            // Optional: Add a subtle bottom border
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .padding(top = 63.dp)
-                    .alpha(0.12f)
-                    .background(MaterialTheme.colorScheme.onSurface)
-            )
         }
     }
 }

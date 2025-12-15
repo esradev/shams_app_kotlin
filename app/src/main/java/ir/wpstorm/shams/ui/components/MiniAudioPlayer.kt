@@ -19,8 +19,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -64,6 +67,11 @@ fun MiniAudioPlayer(
     onCloseClick: () -> Unit,
     onPlayerClick: () -> Unit,
     onSeek: (Long) -> Unit,
+    onDownload: () -> Unit = {},
+    onDelete: () -> Unit = {},
+    onSpeedChange: () -> Unit = {},
+    isDownloaded: Boolean = false,
+    isDownloading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     // Only show if there's an active audio
@@ -165,7 +173,7 @@ fun MiniAudioPlayer(
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    // Audio title and time info
+                    // Audio title and info
                     Column(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -184,36 +192,52 @@ fun MiniAudioPlayer(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        // Time display - smaller and more subtle
-                        val currentTime = formatTime(uiState.currentPosition)
-                        val totalTime = formatTime(uiState.duration)
-                        Text(
-                            text = "$currentTime / $totalTime",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp
-                            ),
-                            color = Gray700.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Right,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .alpha(0.7f)
-                        )
-                    }
+                        // Time display and playback speed
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Playback speed display
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .clickable { onSpeedChange() }
+                                    .background(Emerald700.copy(alpha = 0.1f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Speed,
+                                    contentDescription = "سرعت پخش",
+                                    modifier = Modifier.size(12.dp),
+                                    tint = Emerald700
+                                )
+                                Text(
+                                    text = "${uiState.playbackSpeed}x",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    color = Emerald700
+                                )
+                            }
 
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    // Close button - minimal style
-                    IconButton(
-                        onClick = { onCloseClick() },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "بستن پخش‌کننده",
-                            modifier = Modifier.size(18.dp),
-                            tint = Gray700.copy(alpha = 0.6f)
-                        )
+                            // Time display
+                            val currentTime = formatTime(uiState.currentPosition)
+                            val totalTime = formatTime(uiState.duration)
+                            Text(
+                                text = "$currentTime / $totalTime",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 12.sp,
+                                    lineHeight = 16.sp
+                                ),
+                                color = Gray700.copy(alpha = 0.8f),
+                                textAlign = TextAlign.Left,
+                                modifier = Modifier.alpha(0.7f)
+                            )
+                        }
                     }
                 }
             }
