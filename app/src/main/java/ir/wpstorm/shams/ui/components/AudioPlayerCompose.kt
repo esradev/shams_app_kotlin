@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,11 +72,11 @@ fun AudioPlayerCompose(
     isDownloaded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val isPlaying by audioPlayer.isPlaying
-    val currentPosition by audioPlayer.currentPosition
-    val duration by audioPlayer.duration
-    val isLoaded by audioPlayer.isLoaded
-    val playbackSpeed by audioPlayer.playbackSpeed
+    val isPlaying by audioPlayer.isPlaying.collectAsState()
+    val currentPosition by audioPlayer.currentPosition.collectAsState()
+    val duration by audioPlayer.duration.collectAsState()
+    val isLoaded by audioPlayer.isLoaded.collectAsState()
+    val playbackSpeed by audioPlayer.playbackSpeed.collectAsState()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
 

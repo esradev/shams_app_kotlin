@@ -2,45 +2,34 @@ package ir.wpstorm.shams.player
 
 import android.content.Context
 import android.net.Uri
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.State
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class AudioPlayer(private val context: Context) {
 
     private var exoPlayer: ExoPlayer? = null
     private var updateJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    // Compose State for better integration
-    private val _isPlaying = mutableStateOf(false)
-    val isPlaying: State<Boolean> = _isPlaying
+    private val _isPlaying = MutableStateFlow(false)
+    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
-    private val _currentPosition = mutableStateOf(0L)
-    val currentPosition: State<Long> = _currentPosition
+    private val _currentPosition = MutableStateFlow(0L)
+    val currentPosition: StateFlow<Long> = _currentPosition.asStateFlow()
 
-    private val _duration = mutableStateOf(0L)
-    val duration: State<Long> = _duration
+    private val _duration = MutableStateFlow(0L)
+    val duration: StateFlow<Long> = _duration.asStateFlow()
 
-    private val _isLoaded = mutableStateOf(false)
-    val isLoaded: State<Boolean> = _isLoaded
+    private val _isLoaded = MutableStateFlow(false)
+    val isLoaded: StateFlow<Boolean> = _isLoaded.asStateFlow()
 
-    private val _playbackSpeed = mutableStateOf(1f)
-    val playbackSpeed: State<Float> = _playbackSpeed
-
-    // LiveData for backward compatibility
-    private val _isPlayingLiveData = MutableLiveData(false)
-    val isPlayingLiveData: LiveData<Boolean> = _isPlayingLiveData
-
-    private val _currentPositionLiveData = MutableLiveData(0L)
-    val currentPositionLiveData: LiveData<Long> = _currentPositionLiveData
-
-    private val _durationLiveData = MutableLiveData(0L)
-    val durationLiveData: LiveData<Long> = _durationLiveData
+    private val _playbackSpeed = MutableStateFlow(1f)
+    val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
 
     fun prepare(uri: String) {
         release()
@@ -54,19 +43,19 @@ class AudioPlayer(private val context: Context) {
                         Player.STATE_READY -> {
                             _isLoaded.value = true
                             _duration.value = player.duration
-                            _durationLiveData.value = player.duration
                             startPositionUpdates()
                         }
                         Player.STATE_ENDED -> {
                             _isPlaying.value = false
-                            _isPlayingLiveData.value = false
                         }
                     }
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     _isPlaying.value = isPlaying
-                    _isPlayingLiveData.value = isPlaying
+                    if (isPlaying) {
+                        startPositionUpdates()
+                    }
                 }
             })
         }
@@ -74,14 +63,14 @@ class AudioPlayer(private val context: Context) {
 
     private fun startPositionUpdates() {
         updateJob?.cancel()
-        updateJob = CoroutineScope(Dispatchers.Main).launch {
-            while (isActive && _isLoaded.value) {
+        updateJob = scope.launch {
+            while (isActive) {
                 exoPlayer?.let { player ->
-                    val position = player.currentPosition
-                    _currentPosition.value = position
-                    _currentPositionLiveData.value = position
+                    if (player.isPlaying) {
+                        _currentPosition.value = player.currentPosition
+                    }
                 }
-                delay(100) // Update more frequently for smoother UI
+                delay(100) // Update frequently for smooth UI
             }
         }
     }
@@ -96,6 +85,7 @@ class AudioPlayer(private val context: Context) {
 
     fun seekTo(position: Long) {
         exoPlayer?.seekTo(position)
+        _currentPosition.value = position
     }
 
     fun forward(ms: Long = 30000) {
@@ -113,7 +103,7 @@ class AudioPlayer(private val context: Context) {
     }
 
     fun setPlaybackSpeed(speed: Float) {
-        if (speed > 0f && speed <= 3f) { // Reasonable speed limits
+        if (speed > 0f && speed <= 3f) {
             exoPlayer?.setPlaybackSpeed(speed)
             _playbackSpeed.value = speed
         }
@@ -129,8 +119,5 @@ class AudioPlayer(private val context: Context) {
         _currentPosition.value = 0L
         _duration.value = 0L
         _playbackSpeed.value = 1f
-        _isPlayingLiveData.value = false
-        _currentPositionLiveData.value = 0L
-        _durationLiveData.value = 0L
     }
 }

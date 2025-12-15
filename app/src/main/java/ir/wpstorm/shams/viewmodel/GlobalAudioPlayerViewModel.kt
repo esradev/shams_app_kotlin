@@ -1,14 +1,15 @@
 package ir.wpstorm.shams.viewmodel
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import ir.wpstorm.shams.data.db.DownloadedAudioEntity
 import ir.wpstorm.shams.player.AudioPlayer
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 
 data class GlobalAudioPlayerUiState(
     val isPlaying: Boolean = false,
@@ -24,78 +25,63 @@ class GlobalAudioPlayerViewModel(
     private val audioPlayer: AudioPlayer
 ) : ViewModel() {
 
-    private val _uiState = mutableStateOf(GlobalAudioPlayerUiState())
-    val uiState: State<GlobalAudioPlayerUiState> = _uiState
+    private val _currentAudio = MutableStateFlow<DownloadedAudioEntity?>(null)
+    private val _isMinimized = MutableStateFlow(false)
 
-    init {
-        // Observe audio player state changes
-        viewModelScope.launch {
-            // Use a simple polling approach to update UI state
-            // In a real app, you might want to use StateFlow or other reactive patterns
-            observeAudioPlayerState()
-        }
-    }
+    val uiState: StateFlow<GlobalAudioPlayerUiState> = combine(
+        audioPlayer.isPlaying,
+        audioPlayer.currentPosition,
+        audioPlayer.duration,
+        audioPlayer.isLoaded,
+        audioPlayer.playbackSpeed,
+        _currentAudio,
+        _isMinimized
+    ) { flows ->
+        val isPlaying = flows[0] as Boolean
+        val position = flows[1] as Long
+        val duration = flows[2] as Long
+        val loaded = flows[3] as Boolean
+        val speed = flows[4] as Float
+        val audio = flows[5] as DownloadedAudioEntity?
+        val minimized = flows[6] as Boolean
 
-    private suspend fun observeAudioPlayerState() {
-        while (true) {
-            val currentState = _uiState.value
-            _uiState.value = currentState.copy(
-                isPlaying = audioPlayer.isPlaying.value,
-                currentPosition = audioPlayer.currentPosition.value,
-                duration = audioPlayer.duration.value,
-                isLoaded = audioPlayer.isLoaded.value,
-                playbackSpeed = audioPlayer.playbackSpeed.value
-                // Preserve currentAudio and isMinimized values
-            )
-            delay(100)
-        }
-    }
+        GlobalAudioPlayerUiState(
+            isPlaying = isPlaying,
+            currentAudio = audio,
+            isMinimized = minimized,
+            currentPosition = position,
+            duration = duration,
+            isLoaded = loaded,
+            playbackSpeed = speed
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = GlobalAudioPlayerUiState()
+    )
 
     fun playAudio(audio: DownloadedAudioEntity) {
-        // First set the state to show the mini player
-        _uiState.value = _uiState.value.copy(
-            currentAudio = audio,
-            isMinimized = true  // Ensure mini player shows
-        )
+        _currentAudio.value = audio
+        _isMinimized.value = true
 
-        // Then prepare and play the audio
         audioPlayer.prepare(audio.filePath)
         audioPlayer.play()
-
-        // Force update the UI state again to ensure it's reflected
-        _uiState.value = _uiState.value.copy(
-            currentAudio = audio,
-            isMinimized = true
-        )
     }
 
-    /**
-     * Sets the current audio metadata without re-preparing the player.
-     * Use this when the audio is already playing and you just want to update the mini player display.
-     */
     fun setCurrentAudio(audio: DownloadedAudioEntity) {
-        _uiState.value = _uiState.value.copy(
-            currentAudio = audio,
-            isMinimized = true  // Show mini player
-        )
+        _currentAudio.value = audio
+        _isMinimized.value = true
     }
 
-    /**
-     * Sets current audio and starts playing it.
-     * Use this when you want to set and play audio from a lesson.
-     */
     fun setCurrentAudioAndPlay(audio: DownloadedAudioEntity) {
-        _uiState.value = _uiState.value.copy(
-            currentAudio = audio,
-            isMinimized = true  // Show mini player
-        )
-        // Prepare and play the audio
+        _currentAudio.value = audio
+        _isMinimized.value = true
         audioPlayer.prepare(audio.filePath)
         audioPlayer.play()
     }
 
     fun togglePlayPause() {
-        if (_uiState.value.isPlaying) {
+        if (uiState.value.isPlaying) {
             audioPlayer.pause()
         } else {
             audioPlayer.play()
@@ -123,19 +109,17 @@ class GlobalAudioPlayerViewModel(
     }
 
     fun minimize() {
-        _uiState.value = _uiState.value.copy(isMinimized = true)
+        _isMinimized.value = true
     }
 
     fun maximize() {
-        _uiState.value = _uiState.value.copy(isMinimized = false)
+        _isMinimized.value = false
     }
 
     fun stopAndClear() {
         audioPlayer.pause()
-        _uiState.value = _uiState.value.copy(
-            currentAudio = null,
-            isMinimized = false
-        )
+        _currentAudio.value = null
+        _isMinimized.value = false
     }
 
     override fun onCleared() {

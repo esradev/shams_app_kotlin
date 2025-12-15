@@ -47,7 +47,7 @@ fun SettingsScreen(
     val globalAudioPlayerViewModel: GlobalAudioPlayerViewModel = viewModel(
         factory = GlobalAudioPlayerViewModelFactory(application.globalAudioPlayer)
     )
-    val globalPlayerState by globalAudioPlayerViewModel.uiState
+    val globalPlayerState by globalAudioPlayerViewModel.uiState.collectAsStateWithLifecycle()
 
     // State for confirmation dialogs
     var showDeleteAllDialog by remember { mutableStateOf(false) }

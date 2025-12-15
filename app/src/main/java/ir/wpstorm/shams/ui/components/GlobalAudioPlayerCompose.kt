@@ -35,6 +35,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,7 +53,7 @@ fun GlobalAudioPlayerCompose(
     onNavigateToLesson: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState
+    val uiState by viewModel.uiState.collectAsState()
 
     // Show full player only if there's current audio and it's not minimized
     if (uiState.currentAudio != null && !uiState.isMinimized) {
@@ -320,7 +321,7 @@ fun MiniAudioPlayer(
     onNavigateToLesson: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState
+    val uiState by viewModel.uiState.collectAsState()
 
     // Show mini player when there's current audio, it's minimized, and audio is loaded
     uiState.currentAudio?.let { audio ->
@@ -446,4 +447,3 @@ fun MiniAudioPlayer(
         }
     }
 }
-
