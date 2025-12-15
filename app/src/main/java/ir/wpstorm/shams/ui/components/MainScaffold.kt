@@ -16,17 +16,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import ir.wpstorm.shams.ShamsApplication
 import ir.wpstorm.shams.ui.theme.ThemeState
-import ir.wpstorm.shams.util.DownloadHelper
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
-import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModelFactory
 import kotlinx.coroutines.launch
 import java.io.File
-import ir.wpstorm.shams.data.db.DownloadedAudioEntity
 
 @Composable
 fun MainScaffold(
