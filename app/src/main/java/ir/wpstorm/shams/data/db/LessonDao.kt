@@ -15,7 +15,7 @@ interface LessonDao {
     @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY id ASC")
     fun getLessonsByCategory(categoryId: Int): Flow<List<LessonEntity>>
 
-    @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY id ASC")
+    @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY created_at ASC")
     suspend fun getLessonsByCategorySync(categoryId: Int): List<LessonEntity>
 
     @Query("SELECT * FROM lessons WHERE category_id = :categoryId ORDER BY created_at DESC")

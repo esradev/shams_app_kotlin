@@ -35,6 +35,8 @@ class LessonRepository(private val lessonDao: LessonDao) {
                         content = dto.content.rendered,
                         audioUrl = dto.meta?.`the-audio-of-the-lesson`,
                         categoryId = categoryId,
+                        dateOfLesson = dto.meta?.`date-of-the-lesson`,
+                        isDownloaded = false,
                         createdAt = System.currentTimeMillis(),
                         updatedAt = System.currentTimeMillis(),
                         isFavorite = false,
@@ -91,7 +93,7 @@ class LessonRepository(private val lessonDao: LessonDao) {
                     <div dir="rtl">
                         <h3>بسم الله الرحمن الرحیم</h3>
                         <p>در این جلسه به بررسی مقدمات و اصول کلی می‌پردازیم که پایه و اساس درک صحیح مباحث بعدی است.</p>
-                        
+
                         <h4>سرفصل‌های مطرح شده:</h4>
                         <ul>
                             <li>تعریف و مفهوم‌شناسی اصطلاحات کلیدی</li>
@@ -99,7 +101,7 @@ class LessonRepository(private val lessonDao: LessonDao) {
                             <li>روش‌شناسی مطالعه و تحقیق</li>
                             <li>منابع و مراجع اصلی</li>
                         </ul>
-                        
+
                         <p>ان‌شاء‌الله در جلسات آینده وارد مباحث تخصصی‌تر خواهیم شد.</p>
                     </div>
                 """.trimIndent(),
@@ -116,10 +118,10 @@ class LessonRepository(private val lessonDao: LessonDao) {
                 content = """
                     <div dir="rtl">
                         <p>در این جلسه به بررسی تاریخچه و پیشینه مبحث می‌پردازیم.</p>
-                        
+
                         <h4>نکات مهم این جلسه:</h4>
                         <p>مطالعه تطبیقی دیدگاه‌های مختلف علمای گذشته و معاصر در این زمینه ضروری است.</p>
-                        
+
                         <blockquote>
                             <p>همان‌طور که علمای بزرگ ما فرموده‌اند، فهم درست مسائل نیازمند دقت و تأمل است.</p>
                         </blockquote>
@@ -139,7 +141,7 @@ class LessonRepository(private val lessonDao: LessonDao) {
                     <div dir="rtl">
                         <h3>مباحث عملی و کاربردی</h3>
                         <p>در این بخش به جنبه‌های عملی و کاربردی مطالب پرداخته‌ایم.</p>
-                        
+
                         <h4>مثال‌های عملی:</h4>
                         <ol>
                             <li>مسئله اول و راه‌حل آن</li>
@@ -226,16 +228,16 @@ class LessonRepository(private val lessonDao: LessonDao) {
                 <div dir="rtl">
                     <h3>بسم الله الرحمن الرحیم</h3>
                     <p>این محتوای نمونه برای درس شماره $lessonNumber است که جهت آزمایش UI طراحی شده است.</p>
-                    
+
                     <h4>مطالب این جلسه:</h4>
                     <ul>
                         <li>بحث و بررسی مسائل اساسی</li>
                         <li>تحلیل دیدگاه‌های مختلف</li>
                         <li>ارائه راهکارهای عملی</li>
                     </ul>
-                    
+
                     <p>ان‌شاء‌الله این مطالب مفید واقع شود.</p>
-                    
+
                     <blockquote>
                         <p>علم طلب کردن بر هر مسلمان فرض است.</p>
                     </blockquote>

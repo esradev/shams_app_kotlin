@@ -20,6 +20,12 @@ data class LessonEntity(
     @ColumnInfo(name = "category_id")
     val categoryId: Int? = null,
 
+    @ColumnInfo(name = "date_of_lesson")
+    val dateOfLesson: String? = null,
+
+    @ColumnInfo(name = "is_downloaded")
+    val isDownloaded: Boolean = false,
+
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis(),
 

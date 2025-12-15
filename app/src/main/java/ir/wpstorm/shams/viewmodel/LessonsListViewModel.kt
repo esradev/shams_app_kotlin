@@ -18,7 +18,7 @@ data class LessonsListUiState(
     val postsPerPage: Int = 20,
     val totalPosts: Int = 0,
     val orderBy: String = "date",
-    val order: String = "desc"
+    val order: String = "asc"
 )
 
 class LessonsListViewModel(private val repository: LessonRepository) : ViewModel() {

@@ -58,5 +58,6 @@ data class RenderedText(
 )
 
 data class PostMeta(
-    val `the-audio-of-the-lesson`: String?
+    val `the-audio-of-the-lesson`: String?,
+    val `date-of-the-lesson`: String?
 )

@@ -6,13 +6,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,31 +54,44 @@ fun LessonCard(
             modifier = modifier
                 .fillMaxWidth()
                 .clickable { onClick() }
-                .padding(vertical = 2.dp),
+                .padding(vertical = 4.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-            shape = RoundedCornerShape(8.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            shape = RoundedCornerShape(12.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.End,
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Lesson content
+                // Left side: Chevron icon indicating clickable
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "باز کردن درس",
+                    tint = if (MaterialTheme.colorScheme.surface == Color.White) {
+                        Emerald700
+                    } else {
+                        Emerald400
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Right side: Lesson content
                 androidx.compose.foundation.layout.Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 12.dp)
+                    modifier = Modifier.weight(10f),
+                    horizontalAlignment = Alignment.End
                 ) {
                     Text(
                         text = lesson.title,
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 18.sp
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 17.sp
                         ),
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Right,
@@ -80,40 +99,42 @@ fun LessonCard(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    Text(
-                        text = "تاریخ نامشخص",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Gray500,
-                        textAlign = TextAlign.Right,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-
-                // Lesson number circle
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (MaterialTheme.colorScheme.surface == Color.White) {
-                                Color(0xFFECFDF5) // Emerald-100 equivalent
-                            } else {
-                                Emerald700.copy(alpha = 0.3f)
-                            }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = lessonNumber.toString(),
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = if (MaterialTheme.colorScheme.surface == Color.White) {
-                            Emerald700
-                        } else {
-                            Emerald400
+                    Row(
+                        modifier = Modifier.padding(top = 6.dp),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Download status indicator
+                        if (lesson.isDownloaded) {
+                            Icon(
+                                imageVector = Icons.Default.CloudDone,
+                                contentDescription = "دانلود شده",
+                                tint = Emerald700,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(end = 4.dp))
+                            Text(
+                                text = "دانلود شده",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Emerald700,
+                                textAlign = TextAlign.Right
+                            )
+                            Text(
+                                text = " • ",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Gray500,
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            )
                         }
-                    )
+
+                        // Lesson date
+                        Text(
+                            text = lesson.dateOfLesson ?: "تاریخ نامشخص",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Gray500,
+                            textAlign = TextAlign.Right
+                        )
+                    }
                 }
             }
         }
