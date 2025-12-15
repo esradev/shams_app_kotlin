@@ -77,21 +77,6 @@ fun MainScaffold(
             }
         }
 
-        // Mini Audio Player positioned absolutely at top after header
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 56.dp) // Account for header height
-                .zIndex(10f)
-        ) {
-            MiniAudioPlayer(
-                viewModel = globalAudioPlayerViewModel,
-                onNavigateToLesson = { lessonId ->
-                    navController.navigate("lesson/$lessonId")
-                }
-            )
-        }
-
         // Full-screen Global Audio Player overlay (for expanded view)
         GlobalAudioPlayerCompose(
             viewModel = globalAudioPlayerViewModel,

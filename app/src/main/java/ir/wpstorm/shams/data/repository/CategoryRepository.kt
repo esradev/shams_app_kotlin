@@ -68,16 +68,16 @@ class CategoryRepository(
                 Log.e("CategoryRepository", "Failed to fetch from API: ${e.message}")
                 // If network fails but we have cached data, just use that
                 if (cachedCategories.isEmpty()) {
-                    Log.w("CategoryRepository", "No cached data available, returning mock data")
-                    // Filter mock data to only child categories
-                    emit(getMockCategories().filter { it.parent != 0 })
+                    Log.w("CategoryRepository", "No cached data available and network failed")
+                    // Don't emit anything here - let the UI handle the empty state
+                    throw e
                 }
-                // Otherwise, silently continue with cached data
+                // Otherwise, silently continue with cached data already emitted above
             }
         } catch (e: Exception) {
             Log.e("CategoryRepository", "Error in getCategories: ${e.message}")
-            // If everything fails, return filtered mock data
-            emit(getMockCategories().filter { it.parent != 0 })
+            // If everything fails, throw the exception to let the UI handle error state
+            throw e
         }
     }
 
@@ -112,44 +112,4 @@ class CategoryRepository(
         parent = 1, // Default parent for child categories
         count = 0 // We could calculate this from lessons if needed
     )
-
-    private fun getMockCategories(): List<CategoryItem> {
-        return listOf(
-            CategoryItem(
-                id = 1,
-                name = "درس خارج فقه",
-                description = "مطالعه عمیق مسائل فقهی با رویکرد مقایسه‌ای و تحلیلی برای درک بهتر احکام شرعی و کاربرد آن‌ها در زندگی مؤمنان",
-                parent = 101, // Child of parent category 101
-                count = 45
-            ),
-            CategoryItem(
-                id = 2,
-                name = "درس خارج اصول",
-                description = "بررسی مبانی استنباط احکام شرعی و قواعد اصولی که فقها در استخراج حکم از منابع معتبر اسلامی به کار می‌برند",
-                parent = 102, // Child of parent category 102
-                count = 38
-            ),
-            CategoryItem(
-                id = 3,
-                name = "درس خارج تفسیر قرآن",
-                description = "تفسیر و تبیین آیات قرآن کریم با استفاده از روش‌های علمی و ادبی برای فهم عمیق‌تر مفاهیم قرآنی",
-                parent = 103, // Child of parent category 103
-                count = 52
-            ),
-            CategoryItem(
-                id = 4,
-                name = "درس خارج فلسفه",
-                description = "مطالعه مباحث فلسفی از منظر اسلامی شامل معرفت‌شناسی، هستی‌شناسی و اخلاق با رویکردی عقلانی",
-                parent = 104, // Child of parent category 104
-                count = 29
-            ),
-            CategoryItem(
-                id = 5,
-                name = "درس خارج کلام",
-                description = "بحث و بررسی مسائل اعتقادی و کلامی از دیدگاه شیعه با پاسخ به شبهات و تقویت بنیان‌های ایمانی",
-                parent = 105, // Child of parent category 105
-                count = 33
-            )
-        )
-    }
 }

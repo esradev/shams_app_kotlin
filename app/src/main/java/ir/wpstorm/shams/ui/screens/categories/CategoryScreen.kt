@@ -28,7 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ir.wpstorm.shams.ui.components.CourseCard
+import ir.wpstorm.shams.ui.components.EmptyState
 import ir.wpstorm.shams.ui.components.GlobalError
 import ir.wpstorm.shams.ui.components.GlobalLoading
 import ir.wpstorm.shams.viewmodel.CategoryViewModel
@@ -76,6 +78,13 @@ fun CategoryScreen(
                 uiState.isLoading -> {
                     GlobalLoading(
                         message = "در حال آماده سازی برنامه"
+                    )
+                }
+
+                uiState.categories.isEmpty() -> {
+                    EmptyState(
+                        message = "هیچ دوره‌ای یافت نشد",
+                        onRetry = { viewModel.retryLoading() }
                     )
                 }
 
