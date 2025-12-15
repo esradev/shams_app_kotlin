@@ -73,11 +73,11 @@ fun CourseCard(
                 // Teacher Info Row at the top
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(
-                        horizontalAlignment = Alignment.End
+                        horizontalAlignment = Alignment.Start
                     ) {
                         Text(
                             text = "آیت الله حسینی آملی (حفظه الله)",

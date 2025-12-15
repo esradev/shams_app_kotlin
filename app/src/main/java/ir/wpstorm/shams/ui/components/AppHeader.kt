@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.Icon
@@ -47,6 +48,20 @@ fun AppHeader(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // End side: App Title (in RTL, this appears on the right)
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp)
+                )
+
+
                 // Start side: Action buttons (in RTL, this appears on the left)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(0.dp),
@@ -75,7 +90,7 @@ fun AppHeader(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = "بازگشت",
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(20.dp)
@@ -84,18 +99,6 @@ fun AppHeader(
                     }
                 }
 
-                // End side: App Title (in RTL, this appears on the right)
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 12.dp)
-                )
             }
 
             // Optional: Add a subtle bottom border
