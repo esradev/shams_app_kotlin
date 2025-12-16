@@ -18,7 +18,6 @@ fun HtmlRenderer(html: String) {
     }
 
     BasicText(
-        text = spanned.toString(),
-        style = TextStyle(fontSize = 18.sp)
+        text = spanned.toString()
     )
 }

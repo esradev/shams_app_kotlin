@@ -20,6 +20,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import ir.wpstorm.shams.ShamsApplication
 import ir.wpstorm.shams.ui.theme.ThemeState
+import ir.wpstorm.shams.ui.theme.TextSizeState
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
 import kotlinx.coroutines.launch
 import java.io.File
@@ -28,6 +29,7 @@ import java.io.File
 fun MainScaffold(
     navController: NavController,
     themeState: ThemeState,
+    textSizeState: TextSizeState,
     globalAudioPlayerViewModel: GlobalAudioPlayerViewModel,
     onNavigateToLesson: (Int) -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
@@ -72,7 +74,8 @@ fun MainScaffold(
                     navController.popBackStack()
                 },
                 onThemeToggle = themeState.toggleTheme,
-                isDarkTheme = themeState.isDarkTheme
+                isDarkTheme = themeState.isDarkTheme,
+                onTextSizeClick = textSizeState.increaseTextSize
             )
 
             // Mini Audio Player (shown below header when not on Lesson screen)

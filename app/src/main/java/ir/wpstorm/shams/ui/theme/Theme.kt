@@ -48,6 +48,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun ShamsAlMaarifTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    textScale: Float = 1.0f,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
@@ -64,7 +65,7 @@ fun ShamsAlMaarifTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = createTypography(textScale),
         content = content
     )
 }

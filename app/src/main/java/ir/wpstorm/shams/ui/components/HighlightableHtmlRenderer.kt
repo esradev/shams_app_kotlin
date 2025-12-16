@@ -10,8 +10,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
 import ir.wpstorm.shams.ui.theme.Emerald100
@@ -25,6 +28,11 @@ fun HighlightableHtmlRenderer(
     onMatchesFound: (Int) -> Unit = {},
     currentMatchIndex: Int = 0
 ) {
+    // Get the current text size from MaterialTheme
+    val bodyLargeFontSize = MaterialTheme.typography.bodyLarge.fontSize
+    val density = LocalDensity.current
+    val textSizePx = with(density) { bodyLargeFontSize.toPx() }
+
     // Convert HTML to plain text for searching
     val plainText = remember(html) {
         HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
@@ -51,13 +59,15 @@ fun HighlightableHtmlRenderer(
                 textDirection = android.view.View.TEXT_DIRECTION_RTL
                 textAlignment = android.view.View.TEXT_ALIGNMENT_TEXT_START
                 setPadding(0, 0, 0, 0)
-                textSize = 16f
                 setLineSpacing(8f, 1.2f)
                 @Suppress("DEPRECATION")
                 setTextColor(android.graphics.Color.parseColor("#374151"))
             }
         },
         update = { view ->
+            // Update text size when theme changes
+            view.textSize = textSizePx / view.resources.displayMetrics.scaledDensity
+
             val spannedText = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT)
 
             if (searchQuery.isNotBlank() && matches.isNotEmpty()) {

@@ -323,9 +323,7 @@ fun LessonScreen(
                             Text(
                                 text = lesson.title,
                                 style = MaterialTheme.typography.headlineMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 24.sp,
-                                    lineHeight = 32.sp
+                                    fontWeight = FontWeight.Bold
                                 ),
                                 color = MaterialTheme.colorScheme.onBackground,
                                 textAlign = TextAlign.Right,
@@ -417,8 +415,7 @@ fun LessonScreen(
                                 Text(
                                     text = "محتوای درس",
                                     style = MaterialTheme.typography.titleLarge.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 20.sp
+                                        fontWeight = FontWeight.Bold
                                     ),
                                     color = MaterialTheme.colorScheme.onBackground,
                                     textAlign = TextAlign.Right,

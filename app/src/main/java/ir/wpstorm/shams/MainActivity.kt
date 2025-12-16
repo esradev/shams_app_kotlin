@@ -17,6 +17,8 @@ import ir.wpstorm.shams.ui.navigation.NavGraph
 import ir.wpstorm.shams.ui.theme.ShamsAlMaarifTheme
 import ir.wpstorm.shams.ui.theme.ThemeManager
 import ir.wpstorm.shams.ui.theme.rememberThemeState
+import ir.wpstorm.shams.ui.theme.TextSizeManager
+import ir.wpstorm.shams.ui.theme.rememberTextSizeState
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModelFactory
 
@@ -28,8 +30,13 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val themeManager = remember { ThemeManager(context) }
             val themeState = rememberThemeState(themeManager)
+            val textSizeManager = remember { TextSizeManager(context) }
+            val textSizeState = rememberTextSizeState(textSizeManager)
 
-            ShamsAlMaarifTheme(darkTheme = themeState.isDarkTheme) {
+            ShamsAlMaarifTheme(
+                darkTheme = themeState.isDarkTheme,
+                textScale = textSizeState.textScale
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -45,6 +52,7 @@ class MainActivity : ComponentActivity() {
                     MainScaffold(
                         navController = navController,
                         themeState = themeState,
+                        textSizeState = textSizeState,
                         globalAudioPlayerViewModel = globalAudioPlayerViewModel,
                         onNavigateToLesson = { lessonId ->
                             navController.navigate("lesson/$lessonId")
@@ -53,7 +61,8 @@ class MainActivity : ComponentActivity() {
                         NavGraph(
                             navController = navController,
                             paddingValues = paddingValues,
-                            globalAudioPlayerViewModel = globalAudioPlayerViewModel
+                            globalAudioPlayerViewModel = globalAudioPlayerViewModel,
+                            textSizeState = textSizeState
                         )
                     }
                 }

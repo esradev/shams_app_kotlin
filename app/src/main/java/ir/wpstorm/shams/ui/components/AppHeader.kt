@@ -7,6 +7,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +31,8 @@ fun AppHeader(
     showBackButton: Boolean = false,
     onBackClick: () -> Unit = {},
     onThemeToggle: () -> Unit = {},
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
+    onTextSizeClick: () -> Unit = {}
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Surface(
@@ -67,6 +69,19 @@ fun AppHeader(
                     horizontalArrangement = Arrangement.spacedBy(0.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Text Size Button
+                    IconButton(
+                        onClick = onTextSizeClick,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.TextFields,
+                            contentDescription = "تغییر اندازه متن",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
                     // Theme Toggle Button
                     IconButton(
                         onClick = onThemeToggle,

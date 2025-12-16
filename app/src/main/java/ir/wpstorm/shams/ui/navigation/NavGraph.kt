@@ -19,6 +19,7 @@ import ir.wpstorm.shams.ui.screens.lessons.LessonsListScreen
 import ir.wpstorm.shams.ui.screens.progress.ProgressScreen
 import ir.wpstorm.shams.ui.screens.search.SearchScreen
 import ir.wpstorm.shams.ui.screens.settings.SettingsScreen
+import ir.wpstorm.shams.ui.theme.TextSizeState
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
 import ir.wpstorm.shams.viewmodel.SettingsViewModel
 import ir.wpstorm.shams.viewmodel.SettingsViewModelFactory
@@ -27,7 +28,8 @@ import ir.wpstorm.shams.viewmodel.SettingsViewModelFactory
 fun NavGraph(
     navController: NavHostController,
     paddingValues: PaddingValues,
-    globalAudioPlayerViewModel: GlobalAudioPlayerViewModel
+    globalAudioPlayerViewModel: GlobalAudioPlayerViewModel,
+    textSizeState: TextSizeState
 ) {
     NavHost(
         navController = navController,
@@ -124,6 +126,7 @@ fun NavGraph(
                     navController.popBackStack()
                 },
                 viewModel = viewModel,
+                textSizeState = textSizeState,
                 onNavigateToLesson = { lessonId ->
                     navController.navigate("lesson/$lessonId")
                 }
