@@ -407,7 +407,7 @@ fun LessonsListScreen(
                         }
                     }
 
-                    // Minimal native pagination
+                    // Minimal eye-catching pagination
                     if (lessonUiState.lessons.isNotEmpty() && lessonUiState.totalPages > 1) {
                         val canGoBack = lessonUiState.currentPage > 1
                         val canGoForward = lessonUiState.currentPage < lessonUiState.totalPages
@@ -415,43 +415,91 @@ fun LessonsListScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                                .padding(horizontal = 20.dp, vertical = 6.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Previous button
-                            IconButton(
-                                onClick = { lessonViewModel.goToPreviousPage() },
-                                enabled = canGoBack
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(
+                                        color = if (canGoBack) {
+                                            if (MaterialTheme.colorScheme.surface == Color.White) {
+                                                Emerald700
+                                            } else {
+                                                Emerald400
+                                            }
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                        },
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable(enabled = canGoBack) { lessonViewModel.goToPreviousPage() },
+                                contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.ChevronRight,
                                     contentDescription = "صفحه قبل",
+                                    modifier = Modifier.size(20.dp),
                                     tint = if (canGoBack) {
-                                        MaterialTheme.colorScheme.primary
+                                        Color.White
                                     } else {
                                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                                     }
                                 )
                             }
 
-                            // Page info
-                            Text(
-                                text = "${lessonUiState.currentPage} / ${lessonUiState.totalPages}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            // Page info with badge style
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "${lessonUiState.currentPage}",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "/",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                                Text(
+                                    text = "${lessonUiState.totalPages}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
 
                             // Next button
-                            IconButton(
-                                onClick = { lessonViewModel.goToNextPage() },
-                                enabled = canGoForward
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(
+                                        color = if (canGoForward) {
+                                            if (MaterialTheme.colorScheme.surface == Color.White) {
+                                                Emerald700
+                                            } else {
+                                                Emerald400
+                                            }
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                        },
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable(enabled = canGoForward) { lessonViewModel.goToNextPage() },
+                                contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.ChevronLeft,
                                     contentDescription = "صفحه بعد",
+                                    modifier = Modifier.size(20.dp),
                                     tint = if (canGoForward) {
-                                        MaterialTheme.colorScheme.primary
+                                        Color.White
                                     } else {
                                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                                     }
