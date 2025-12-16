@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -15,10 +15,10 @@ import androidx.navigation.compose.rememberNavController
 import ir.wpstorm.shams.ui.components.MainScaffold
 import ir.wpstorm.shams.ui.navigation.NavGraph
 import ir.wpstorm.shams.ui.theme.ShamsAlMaarifTheme
-import ir.wpstorm.shams.ui.theme.ThemeManager
-import ir.wpstorm.shams.ui.theme.rememberThemeState
 import ir.wpstorm.shams.ui.theme.TextSizeManager
+import ir.wpstorm.shams.ui.theme.ThemeManager
 import ir.wpstorm.shams.ui.theme.rememberTextSizeState
+import ir.wpstorm.shams.ui.theme.rememberThemeState
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModelFactory
 

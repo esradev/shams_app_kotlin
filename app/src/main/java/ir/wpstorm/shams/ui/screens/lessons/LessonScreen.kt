@@ -41,7 +41,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ir.wpstorm.shams.data.db.DownloadedAudioEntity
 import ir.wpstorm.shams.ui.components.AudioPlayerCompose
@@ -52,11 +51,9 @@ import ir.wpstorm.shams.ui.components.SearchNavigationBar
 import ir.wpstorm.shams.ui.theme.Emerald400
 import ir.wpstorm.shams.ui.theme.Emerald700
 import ir.wpstorm.shams.ui.theme.Gray50
-import ir.wpstorm.shams.ui.theme.Gray700
 import ir.wpstorm.shams.ui.theme.Gray900
 import ir.wpstorm.shams.util.DownloadHelper
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
-import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModelFactory
 import ir.wpstorm.shams.viewmodel.LessonViewModel
 import ir.wpstorm.shams.viewmodel.LessonViewModelFactory
 import kotlinx.coroutines.launch

@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import ir.wpstorm.shams.ShamsApplication
-import ir.wpstorm.shams.ui.theme.ThemeState
 import ir.wpstorm.shams.ui.theme.TextSizeState
+import ir.wpstorm.shams.ui.theme.ThemeState
 import ir.wpstorm.shams.viewmodel.GlobalAudioPlayerViewModel
 import kotlinx.coroutines.launch
 import java.io.File

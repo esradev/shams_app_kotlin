@@ -24,11 +24,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -54,11 +51,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ir.wpstorm.shams.player.AudioPlayer
-import ir.wpstorm.shams.ui.theme.Emerald400
 import ir.wpstorm.shams.ui.theme.Emerald700
 import ir.wpstorm.shams.ui.theme.Gray400
-import ir.wpstorm.shams.ui.theme.Gray50
-import ir.wpstorm.shams.ui.theme.Gray700
 
 @Composable
 fun AudioPlayerCompose(

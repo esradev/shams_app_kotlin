@@ -42,7 +42,6 @@ import ir.wpstorm.shams.R
 import ir.wpstorm.shams.ui.theme.Emerald400
 import ir.wpstorm.shams.ui.theme.Emerald50
 import ir.wpstorm.shams.ui.theme.Emerald700
-import ir.wpstorm.shams.ui.theme.Gray400
 import ir.wpstorm.shams.ui.theme.Gray500
 import ir.wpstorm.shams.ui.theme.Gray700
 import ir.wpstorm.shams.viewmodel.CategoryItem
