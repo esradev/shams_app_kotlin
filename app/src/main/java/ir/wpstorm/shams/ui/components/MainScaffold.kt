@@ -51,8 +51,8 @@ fun MainScaffold(
         else -> ""
     }
 
-    // Show tab bar only on main screens
-    val showTabBar = currentDestination in listOf("categories", "search", "settings")
+    // Show tab bar on all screens except lesson detail screen
+    val showTabBar = !isLessonScreen
 
     // Collect global audio player state
     val audioPlayerUiState by globalAudioPlayerViewModel.uiState.collectAsState()
