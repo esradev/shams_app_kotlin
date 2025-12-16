@@ -337,7 +337,7 @@ fun LessonScreen(
                             Text(
                                 text = "آیت الله سید محمدرضا حسینی آملی (حفظه الله)",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Gray700,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Right,
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -455,7 +455,7 @@ fun LessonScreen(
                         Text(
                             text = "درس یافت نشد",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = Gray700,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
                     }

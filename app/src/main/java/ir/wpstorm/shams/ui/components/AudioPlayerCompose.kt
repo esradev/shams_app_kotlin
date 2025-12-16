@@ -121,7 +121,7 @@ fun AudioPlayerCompose(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 12.sp
                             ),
-                            color = Gray700,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.width(48.dp)
                         )
@@ -149,7 +149,7 @@ fun AudioPlayerCompose(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 12.sp
                             ),
-                            color = Gray700,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.width(48.dp)
                         )
@@ -210,7 +210,7 @@ fun AudioPlayerCompose(
                             imageVector = Icons.Default.FastForward,
                             contentDescription = "30 ثانیه عقب",
                             modifier = Modifier.size(24.dp),
-                            tint = Gray700
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -263,7 +263,7 @@ fun AudioPlayerCompose(
                             imageVector = Icons.Default.FastRewind,
                             contentDescription = "30 ثانیه جلو",
                             modifier = Modifier.size(24.dp),
-                            tint = Gray700
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -317,7 +317,7 @@ fun AudioPlayerCompose(
                                     imageVector = Icons.Default.CloudDownload,
                                     contentDescription = "دانلود صوت",
                                     modifier = Modifier.size(16.dp),
-                                    tint = Gray700
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }

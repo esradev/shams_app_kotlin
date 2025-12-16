@@ -233,9 +233,9 @@ fun MiniAudioPlayer(
                                     fontSize = 12.sp,
                                     lineHeight = 16.sp
                                 ),
-                                color = Gray700.copy(alpha = 0.8f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Left,
-                                modifier = Modifier.alpha(0.7f)
+                                modifier = Modifier.alpha(0.8f)
                             )
                         }
                     }
@@ -257,7 +257,7 @@ fun MiniAudioPlayer(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "بستن پخش‌کننده",
                                 modifier = Modifier.size(18.dp),
-                                tint = Gray700.copy(alpha = 0.6f)
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
