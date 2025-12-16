@@ -60,16 +60,14 @@ fun SearchScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    val isDarkTheme = MaterialTheme.colorScheme.background == Gray900
+
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    if (MaterialTheme.colorScheme.background == Color.White) {
-                        Gray50
-                    } else {
-                        Gray900
-                    }
+                    if (isDarkTheme) Gray900 else Gray50
                 ),
             topBar = {
                 TopAppBar(
@@ -95,11 +93,7 @@ fun SearchScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .background(
-                        if (MaterialTheme.colorScheme.background == Color.White) {
-                            Gray50
-                        } else {
-                            Gray900
-                        }
+                        if (isDarkTheme) Gray900 else Gray50
                     )
             ) {
                 // Search input

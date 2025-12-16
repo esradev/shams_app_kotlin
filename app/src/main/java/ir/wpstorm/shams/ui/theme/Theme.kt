@@ -21,9 +21,9 @@ private val DarkColorScheme = darkColorScheme(
     onPrimary = Gray900,
     onSecondary = Color.White,
     onTertiary = Gray900,
-    onBackground = Color(0xFFE5E7EB), // Light gray for better contrast
-    onSurface = Color(0xFFE5E7EB), // Light gray for better contrast
-    onSurfaceVariant = Color(0xFFD1D5DB), // Lighter gray for secondary text
+    onBackground = Color(0xFFF3F4F6), // Much lighter gray for better contrast
+    onSurface = Color(0xFFF3F4F6), // Much lighter gray for better contrast
+    onSurfaceVariant = Color(0xFFE5E7EB), // Lighter gray for secondary text
     outline = Gray600,
     outlineVariant = Gray500
 )

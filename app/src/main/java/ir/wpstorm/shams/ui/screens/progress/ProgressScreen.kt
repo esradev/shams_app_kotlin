@@ -74,16 +74,14 @@ fun ProgressScreen(
     val progressViewModel: ProgressViewModel = viewModel(factory = progressFactory)
     val progressUiState by progressViewModel.uiState.collectAsState()
 
+    val isDarkTheme = MaterialTheme.colorScheme.background == Gray900
+
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    if (MaterialTheme.colorScheme.background == Color.White) {
-                        Gray50
-                    } else {
-                        Gray900
-                    }
+                    if (isDarkTheme) Gray900 else Gray50
                 )
         ) {
             when {
