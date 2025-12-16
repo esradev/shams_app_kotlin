@@ -50,7 +50,8 @@ class LessonRepository(
 
             // 2️⃣ Try API to get fresh data
             try {
-                val apiLessons = api.getPostsByCategory(categoryId, perPage, page, orderBy, order)
+                val response = api.getPostsByCategoryWithHeaders(categoryId, perPage, page, orderBy, order)
+                val apiLessons = response.body() ?: emptyList()
                 Log.d("LessonRepository", "API returned ${apiLessons.size} lessons")
 
                 val entities = apiLessons.map { dto ->
@@ -188,33 +189,29 @@ class LessonRepository(
     // 🔹 Get total lessons count for pagination
     suspend fun getTotalLessonsCount(categoryId: Int): Int {
         return try {
-            // First try to get from database
-            val dbCount = lessonDao.getLessonCountByCategory(categoryId)
+            Log.d("LessonRepository", "Getting total lessons count for category: $categoryId")
 
-            if (dbCount > 0) {
-                // If we have data in database, use it
-                dbCount
+            // Make an API call to get pagination headers
+            val response = api.getPostsByCategoryWithHeaders(categoryId, 1, 1, "date", "desc")
+
+            // Extract X-WP-Total header for total count
+            val totalHeader = response.headers()["X-WP-Total"]
+            val total = totalHeader?.toIntOrNull()
+
+            if (total != null && total > 0) {
+                Log.d("LessonRepository", "Got total count from API header: $total")
+                total
             } else {
-                // Try to estimate from API by making a call with a large per_page
-                try {
-                    val apiLessons = api.getPostsByCategory(categoryId, 100, 1, "date", "desc")
-                    val estimatedTotal = if (apiLessons.size >= 100) {
-                        // If we got 100 results, there might be more, estimate 150
-                        150
-                    } else {
-                        // Use the actual count
-                        apiLessons.size
-                    }
-                    estimatedTotal
-                } catch (e: Exception) {
-                    Log.e("LessonRepository", "Failed to get total count from API: ${e.message}")
-                    // Fallback to a reasonable default
-                    30
-                }
+                // Fallback: get from database
+                val dbCount = lessonDao.getLessonCountByCategory(categoryId)
+                Log.d("LessonRepository", "Fallback to database count: $dbCount")
+                if (dbCount > 0) dbCount else 30 // Default fallback
             }
         } catch (e: Exception) {
             Log.e("LessonRepository", "Failed to get total count: ${e.message}")
-            30
+            // Fallback to database count
+            val dbCount = lessonDao.getLessonCountByCategory(categoryId)
+            if (dbCount > 0) dbCount else 30
         }
     }
 

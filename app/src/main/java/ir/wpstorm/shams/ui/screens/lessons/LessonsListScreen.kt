@@ -407,106 +407,55 @@ fun LessonsListScreen(
                         }
                     }
 
-                    // Modern Sticky bottom pagination
+                    // Minimal native pagination
                     if (lessonUiState.lessons.isNotEmpty() && lessonUiState.totalPages > 1) {
                         val canGoBack = lessonUiState.currentPage > 1
                         val canGoForward = lessonUiState.currentPage < lessonUiState.totalPages
 
-                        Card(
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            shape = RoundedCornerShape(12.dp)
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            // Previous button
+                            IconButton(
+                                onClick = { lessonViewModel.goToPreviousPage() },
+                                enabled = canGoBack
                             ) {
-                                // Previous button (right side in RTL)
-                                OutlinedButton(
-                                    onClick = { lessonViewModel.goToPreviousPage() },
-                                    enabled = canGoBack,
-                                    modifier = Modifier
-                                        .background(
-                                            color = if (canGoBack) {
-                                                if (MaterialTheme.colorScheme.surface == Color.White) {
-                                                    Emerald700
-                                                } else {
-                                                    Emerald400
-                                                }
-                                            } else {
-                                                MaterialTheme.colorScheme.surfaceVariant
-                                            },
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .height(40.dp),
-                                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                                        containerColor = Color.Transparent,
-                                        contentColor = if (canGoBack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    ),
-                                    border = null
-                                ) {
-                                    Text(
-                                        text = "قبلی",
-                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                                        color = if (canGoBack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.ChevronRight,
-                                        contentDescription = "صفحه قبل",
-                                        modifier = Modifier.size(14.dp),
-                                        tint = if (canGoBack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-
-                                // Page info
-                                Text(
-                                    text = "${lessonUiState.currentPage} از ${lessonUiState.totalPages}",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                Icon(
+                                    imageVector = Icons.Default.ChevronRight,
+                                    contentDescription = "صفحه قبل",
+                                    tint = if (canGoBack) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                    }
                                 )
+                            }
 
-                                // Next button (left side in RTL)
-                                OutlinedButton(
-                                    onClick = { lessonViewModel.goToNextPage() },
-                                    enabled = canGoForward,
-                                    modifier = Modifier
-                                        .background(
-                                            color = if (canGoForward) {
-                                                if (MaterialTheme.colorScheme.surface == Color.White) {
-                                                    Emerald700
-                                                } else {
-                                                    Emerald400
-                                                }
-                                            } else {
-                                                MaterialTheme.colorScheme.surfaceVariant
-                                            },
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .height(40.dp),
-                                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                                        containerColor = Color.Transparent,
-                                        contentColor = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    ),
-                                    border = null
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ChevronLeft,
-                                        contentDescription = "صفحه بعد",
-                                        modifier = Modifier.size(14.dp),
-                                        tint = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "بعدی",
-                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                                        color = if (canGoForward) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
+                            // Page info
+                            Text(
+                                text = "${lessonUiState.currentPage} / ${lessonUiState.totalPages}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            // Next button
+                            IconButton(
+                                onClick = { lessonViewModel.goToNextPage() },
+                                enabled = canGoForward
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ChevronLeft,
+                                    contentDescription = "صفحه بعد",
+                                    tint = if (canGoForward) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                    }
+                                )
                             }
                         }
                     }
